@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# glass: tiny client bots use to talk to the Grok Bot Glass relay.
+# glass: tiny client bots use to talk to the BUD (Bots Up Display) relay.
 #
 #   glass reply   <bot_id> <message_id> <reply text ≤1500 chars; glasses page it>
 #   glass need    <bot_id> <ref> <approval|question|draft|other> <title ≤60> [detail ≤400]
@@ -9,7 +9,7 @@
 #   glass revoke  <device_id>  (admin) revoke a device
 #
 # Env:
-#   GLASS_RELAY_URL                    e.g. https://grokbot-glass-relay.<sub>.workers.dev
+#   GLASS_RELAY_URL                    e.g. https://bud-relay.<sub>.workers.dev
 #   GLASS_BOT_TOKEN or GLASS_BOT_TOKEN_FILE      bot write token (reply/need/resolve)
 #   GLASS_ADMIN_TOKEN or GLASS_ADMIN_TOKEN_FILE  admin token (pair-code/devices/revoke)
 # Tokens are read from env or a file and are never printed.

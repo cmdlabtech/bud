@@ -1,5 +1,5 @@
 {
-  "name": "grokbot-glass-relay",
+  "name": "bud-relay",
   "private": true,
   "type": "module",
   "scripts": {

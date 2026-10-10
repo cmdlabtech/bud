@@ -19,7 +19,7 @@ const IGNORE = [/^http:\/\/www\.w3\.org\//];
 // Secret and dev-leak patterns. Values are never printed, only the rule and file.
 const LEAKS = [
   ['xAI API key', /\bxai-[A-Za-z0-9]{20,}/],
-  ['Grok Bot Glass device token', /\bgbg_d_[A-Za-z0-9_-]{8,}/],
+  ['BUD device token', /\bbud_d_[A-Za-z0-9_-]{8,}/],
   ['bearer literal', /Bearer\s+[A-Za-z0-9._-]{20,}/],
   ['private key', /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
   ['Cloudflare API token var', /CLOUDFLARE_API_TOKEN|CF_API_TOKEN/],

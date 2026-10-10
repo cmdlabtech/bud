@@ -1,11 +1,11 @@
-# Even Hub submission checklist — Grok Bot Glass 1.0.0
+# Even Hub submission checklist — BUD (Bots Up Display) 1.0.0
 
 Source for every item: https://hub.evenrealities.com/docs/ship/app-submission (updated 2026-08-07) unless noted.
 Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not verifiable here
 
 ## Manifest
-- ✅ package_id `tech.cmdlab.grokbotglass` (valid format). ⏳ availability: `evenhub pack ... -c` contacts Even (run at gate time)
-- ✅ edition 202601 · name 14 chars, no "Even" · version 1.0.0 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
+- ✅ package_id `tech.cmdlab.bud` (valid format). ⏳ availability: `evenhub pack ... -c` contacts Even (run at gate time)
+- ✅ edition 202601 · name "BUD" 3 chars, no "Even" · version 1.0.0 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
 - ✅ entrypoint index.html exists in the build folder (pack succeeded)
 - ✅ permissions are objects with name+desc (103 and 145 chars); network has a whitelist of the relay origin only
 - ✅ every permission is used: network (relay fetches), g2-microphone (`audioControl(true, AudioInputSource.Glasses)`)
@@ -13,11 +13,11 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 - ⏳ changelog/release notes text: docs/store-listing.md
 
 ## Store listing & assets
-- ✅ icon 24x24 1-bit, 2x2 blocks (validated) — ⏳ re-draw in the portal editor
+- ⏳ icon: draw in the Developer Portal's 24x24 pixel editor (Even's tool; 1-bit, 2x2 blocks) ([design guidelines](https://hub.evenrealities.com/docs/build/design-guidelines))
 - ❓ background image: required non-empty, monochrome; spec not in docs → check portal
 - ✅ screenshots from the simulator screenshot API (store/screenshots)
 - ✅ display name = app.json name
-- ⏳ brand/impersonation: confirm right to use "Grok Bot" (store-listing.md risk 1)
+- ⏳ brand: name is BUD; confirm naming Grok Bot in the description (store-listing.md risk 1)
 
 ## Privacy
 - ⏳ publish docs/privacy.md at a public URL; it covers network + g2-microphone and names the relay, xAI, Cloudflare

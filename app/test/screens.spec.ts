@@ -101,6 +101,12 @@ describe('screens', () => {
     const r = readerPage({ botName: 'EDITH', text: long, page: 1 });
     expect(r.containers[0].kind === 'text' && r.containers[0].content).toMatch(/reply 2 of \d+/);
   });
+  it('BUD branding: short Home header, name plus tagline on pairing', () => {
+    const h = homePage({ bots: mkBots(2), needs: [], page: 0, selected: 0, showPos: true });
+    expect(h.containers[0].kind === 'text' && h.containers[0].content).toMatch(/^BUD   0 need you   0 new$/);
+    expect(JSON.stringify(pairingPage({}))).toContain('BUD   Bots Up Display');
+    expect(JSON.stringify(allPages())).not.toMatch(/Grok Bot Glass/);
+  });
   it('needs item says approvals happen in the Grok Bot app', () => {
     expect(JSON.stringify(needItemPage({ need: need(1), index: 0, total: 1, now }))).toContain('Approve in Grok Bot app.');
   });

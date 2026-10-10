@@ -1,10 +1,10 @@
-# Grok Bot Glass — Privacy Policy (DRAFT, needs CMDLAB review and a public URL)
+# BUD (Bots Up Display) — Privacy Policy (DRAFT, needs CMDLAB review and a public URL)
 
 Last updated: (fill in at publish)
 
-Grok Bot Glass lets you talk to your own Grok Bots from Even Realities G2 glasses. It is published by
-cmdlabtech (CMDLAB). The app talks to one server only: your Grok Bot Glass relay at
-`https://grokbot-glass-relay.<subdomain>.workers.dev`, run by CMDLAB on Cloudflare Workers.
+BUD (Bots Up Display) lets you talk to your own Grok Bots from Even Realities G2 glasses. It is published by
+cmdlabtech (CMDLAB). The app talks to one server only: your BUD relay at
+`https://bud-relay.<subdomain>.workers.dev`, run by CMDLAB on Cloudflare Workers.
 
 ## What the app uses and why
 - **Glasses microphone (g2-microphone).** Only while you hold or tap to talk. The recording is sent to the

@@ -20,7 +20,7 @@ export const OUTBOX_MAX = 5;
 export const OUTBOX_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 export const MIC_WATCHDOG_MS = 3000;
-export const MIC_OFF_TEXT = 'No sound from the glasses mic. In the Even app, allow the microphone for Grok Bot Glass, then long press to try again.';
+export const MIC_OFF_TEXT = 'No sound from the glasses mic. In the Even app, allow the microphone for BUD, then long press to try again.';
 
 export interface OutboxItem { bot_id: string; text: string; ts: number }
 interface Cache { bots: Bot[]; needs: Need[]; savedAt: number; threads?: Record<string, { messages: Message[]; total: number }> }
@@ -172,7 +172,7 @@ export class Controller {
 
   private async paintHeader() {
     const newCount = this.bots.filter(b => b.unread > 0).length;
-    const base = this.homePageNo === 0 ? homeHeader(this.needs.length, newCount) : 'Grok Bot   more bots';
+    const base = this.homePageNo === 0 ? homeHeader(this.needs.length, newCount) : 'BUD   more bots';
     await this.d.display.update('hdr', base + freshTag(this.freshness, this.savedAt, Date.now(), this.outbox.length));
   }
 

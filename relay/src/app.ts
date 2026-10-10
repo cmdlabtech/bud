@@ -118,7 +118,7 @@ export function createApp(deps: Deps) {
 
   async function requireDevice(c: C): Promise<string> {
     const token = bearer(c);
-    if (!token.startsWith('gbg_d_')) throw ERR.auth();
+    if (!token.startsWith('bud_d_')) throw ERR.auth();
     const hash = await sha256Hex(token);
     const row = sql.all<{ id: string }>(`SELECT id FROM devices WHERE token_hash = ? AND revoked = 0`, hash)[0];
     if (!row) throw ERR.auth();
@@ -214,7 +214,7 @@ export function createApp(deps: Deps) {
     const row = sql.all<{ code_hash: string }>(`SELECT code_hash FROM pair_codes WHERE code_hash = ? AND used = 0 AND expires_at >= ?`, hash, now())[0];
     if (!row) throw ERR.auth();
     sql.run(`UPDATE pair_codes SET used = 1 WHERE code_hash = ?`, hash);
-    const token = randomToken('gbg_d_');
+    const token = randomToken('bud_d_');
     const id = randomId();
     const name = cleanText(b.device_name, 40) || 'G2';
     sql.run(`INSERT INTO devices (id, name, token_hash, created_at, last_seen) VALUES (?, ?, ?, ?, ?)`, id, name, await sha256Hex(token), now(), now());
@@ -318,7 +318,7 @@ export function createApp(deps: Deps) {
     const id = randomId();
     const t = now();
     sql.run(`INSERT INTO messages (id, bot_id, device_id, text, status, created_at) VALUES (?, ?, ?, ?, 'pending', ?)`, id, bot.id, dev, text, t);
-    const ok = await postWebhook(bot, { source: 'grokbot-glass', kind: 'voice', bot_id: bot.id, message_id: id, request_id: rid, text, ts: t });
+    const ok = await postWebhook(bot, { source: 'bud', kind: 'voice', bot_id: bot.id, message_id: id, request_id: rid, text, ts: t });
     sql.run(`UPDATE messages SET status = ? WHERE id = ?`, ok ? 'sent' : 'failed', id);
     return c.json({ message_id: id, status: ok ? 'sent' : 'failed' }, ok ? 200 : 502);
   });
@@ -398,7 +398,7 @@ export function createApp(deps: Deps) {
     let forwarded = false;
     if (action !== 'snooze_1h') {
       const bot = roster.find(x => x.id === item.bot_id);
-      if (bot) forwarded = await postWebhook(bot, { source: 'grokbot-glass', kind: 'needs_action', bot_id: bot.id, item_ref: item.ref, action, request_id: rid, ts: t });
+      if (bot) forwarded = await postWebhook(bot, { source: 'bud', kind: 'needs_action', bot_id: bot.id, item_ref: item.ref, action, request_id: rid, ts: t });
     }
     return c.json({ ok: true, forwarded });
   });

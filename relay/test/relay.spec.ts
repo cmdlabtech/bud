@@ -20,7 +20,7 @@ describe('pairing and devices', () => {
     const p = await h.req('POST', '/v1/pair', { body: { code } });
     expect(p.status).toBe(200);
     const { token } = await p.json() as { token: string };
-    expect(token.startsWith('gbg_d_')).toBe(true);
+    expect(token.startsWith('bud_d_')).toBe(true);
     const stored = JSON.stringify(h.sql.all('SELECT * FROM devices'));
     expect(stored).not.toContain(token);
     expect(stored).not.toContain(code);
@@ -55,7 +55,7 @@ describe('pairing and devices', () => {
 
   it('rejects garbage and wrong-prefix tokens with a generic error', async () => {
     const h = harness();
-    const r = await h.req('GET', '/v1/bots', { token: 'gbg_d_not-a-real-token-at-all' });
+    const r = await h.req('GET', '/v1/bots', { token: 'bud_d_not-a-real-token-at-all' });
     expect(r.status).toBe(401);
     expect(await r.json()).toEqual({ error: 'Unauthorized' });
     expect((await h.req('GET', '/v1/bots', { token: BOTTOKEN })).status).toBe(401);
@@ -92,7 +92,7 @@ describe('messages and replies', () => {
     expect(hook.url).toBe('https://hooks.test/shuri');
     expect((hook.init.headers as Record<string, string>).Authorization).toBe('Bearer shuri-sender-key-xyz');
     expect((hook.init.headers as Record<string, string>)['X-Automation-Key']).toBe('shuri-sender-key-xyz');
-    expect(hook.body).toMatchObject({ source: 'grokbot-glass', kind: 'voice', bot_id: 'shuri', message_id, text: 'Check PR 16' });
+    expect(hook.body).toMatchObject({ source: 'bud', kind: 'voice', bot_id: 'shuri', message_id, text: 'Check PR 16' });
     expect(hook.body.request_id).toBeTruthy();
 
     // bot replies

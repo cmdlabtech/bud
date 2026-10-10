@@ -34,7 +34,7 @@ export function createFakeRelay(mode: string) {
     const p = url.pathname; const m = init.method ?? 'GET';
     const body = typeof init.body === 'string' ? JSON.parse(init.body) : {};
     sync();
-    if (p === '/v1/pair' && m === 'POST') return body.code === '12345678' ? json({ token: 'gbg_d_FAKE_DEV_ONLY_TOKEN_0000', device_id: 'dev1' }) : json({ error: 'Unauthorized' }, 401);
+    if (p === '/v1/pair' && m === 'POST') return body.code === '12345678' ? json({ token: 'bud_d_FAKE_DEV_ONLY_TOKEN_0000', device_id: 'dev1' }) : json({ error: 'Unauthorized' }, 401);
     if (p === '/v1/bots') return json({ bots: bots.filter(b => mode.includes('nobots') ? false : true).map(({ order, ...b }) => b) });
     if (p === '/v1/needs') return json({ needs });
     let r = /^\/v1\/bots\/([^/]+)\/messages$/.exec(p);

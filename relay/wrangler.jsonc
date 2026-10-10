@@ -1,6 +1,6 @@
 {
-  // Grok Bot Glass relay. Deploying needs CMDLAB's "approve deploy".
-  "name": "grokbot-glass-relay",
+  // BUD (Bots Up Display) relay. Deploying needs CMDLAB's "approve deploy".
+  "name": "bud-relay",
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   "workers_dev": true,

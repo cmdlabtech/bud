@@ -20,7 +20,7 @@ export class RelayClient {
 
   async load(): Promise<boolean> {
     const t = await this.kv.get(TOKEN_KEY).catch(() => '');
-    this.token = t && t.startsWith('gbg_d_') ? t : null;
+    this.token = t && t.startsWith('bud_d_') ? t : null;
     return this.token !== null;
   }
   get paired(): boolean { return this.token !== null; }
@@ -54,7 +54,7 @@ export class RelayClient {
 
   async pair(code: string, deviceName: string): Promise<void> {
     const r = await this.call<{ token: string }>('POST', '/v1/pair', { body: { code, device_name: deviceName }, auth: false });
-    if (!r.token?.startsWith('gbg_d_')) throw new ApiError('server');
+    if (!r.token?.startsWith('bud_d_')) throw new ApiError('server');
     this.token = r.token;
     await this.kv.set(TOKEN_KEY, r.token);
   }

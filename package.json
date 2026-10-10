@@ -1,5 +1,5 @@
 {
-  "name": "grokbot-glass",
+  "name": "bud",
   "version": "0.1.0",
   "private": true,
   "workspaces": ["relay", "app"],

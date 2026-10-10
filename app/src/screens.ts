@@ -64,7 +64,7 @@ export function freshTag(f: Freshness, savedAt?: number, now = Date.now(), outbo
 }
 
 export function homeHeader(needCount: number, newCount: number): string {
-  return `Grok Bot   ${needCount} need you   ${newCount} new`;
+  return `BUD   ${needCount} need you   ${newCount} new`;
 }
 
 export function posText(index: number, total: number): string {
@@ -111,7 +111,7 @@ export function homePage(p: { bots: Bot[]; needs: Need[]; page: 0 | 1; selected:
     return {
       key: 'home0',
       containers: [
-        T('hdr', 0, 0, W, HDR_H, 'Grok Bot' + (fresh === 'offline' ? '   offline' : ''), { color: BRIGHT.meta }),
+        T('hdr', 0, 0, W, HDR_H, 'BUD' + (fresh === 'offline' ? '   offline' : ''), { color: BRIGHT.meta }),
         T('state', 0, 44, W, 36, fresh === 'offline' ? `${G.idle} Offline` : msg, { capture: true }),
         T('why', 0, 84, W, 82, fresh === 'offline' ? "Can't reach Grok Bot. Press to try again." : why, { color: BRIGHT.secondary }),
         foot(fresh === 'loading' ? 'double exit' : 'press refresh    double exit'),
@@ -122,7 +122,7 @@ export function homePage(p: { bots: Bot[]; needs: Need[]; page: 0 | 1; selected:
   const { items } = homeItems(p);
   const newCount = p.bots.reduce((a, b) => a + (b.unread > 0 ? 1 : 0), 0);
   const containers: ContainerSpec[] = [
-    T('hdr', 0, 0, W, HDR_H, (p.page === 0 ? homeHeader(p.needs.length, newCount) : 'Grok Bot   more bots') + freshTag(fresh, p.savedAt, p.now, p.outbox), { color: BRIGHT.meta }),
+    T('hdr', 0, 0, W, HDR_H, (p.page === 0 ? homeHeader(p.needs.length, newCount) : 'BUD   more bots') + freshTag(fresh, p.savedAt, p.now, p.outbox), { color: BRIGHT.meta }),
     T('rows', 0, HDR_H, p.showPos ? HOME_LIST_W : W, 226, homeListText(items, p.selected), { capture: true, pad: 4 }),
   ];
   if (p.showPos) containers.push(T('pos', HOME_LIST_W, HDR_H, W - HOME_LIST_W, 226, posText(p.selected, items.length), { color: BRIGHT.hint }));
@@ -314,7 +314,7 @@ export function offlinePage(p: { reason: 'offline' | 'error'; hasOutbox: boolean
   return {
     key: 'offline',
     containers: [
-      T('hdr', 0, 0, W, HDR_H, 'Grok Bot', { color: BRIGHT.meta }),
+      T('hdr', 0, 0, W, HDR_H, 'BUD', { color: BRIGHT.meta }),
       T('state', 0, 44, W, 36, p.reason === 'offline' ? `${G.idle} Offline` : `${G.idle} Something went wrong`, { capture: true }),
       T('why', 0, 84, W, 58, p.reason === 'offline' ? "Can't reach Grok Bot from your phone. Check the phone's signal." : 'The relay had a problem. Try again in a moment.', { color: BRIGHT.secondary }),
       T('saved', 0, 150, W, 58, p.hasOutbox ? "Your last message is saved. It sends when you're back online and the app is open." : ' ', { color: BRIGHT.meta }),
@@ -330,9 +330,9 @@ export function pairingPage(p: { message?: string }): PageSpec {
   return {
     key: 'pairing',
     containers: [
-      T('hdr', 0, 0, W, HDR_H, 'Grok Bot Glass', { color: BRIGHT.meta }),
+      T('hdr', 0, 0, W, HDR_H, 'BUD   Bots Up Display', { color: BRIGHT.meta }),
       T('state', 0, 44, W, 36, `${G.idle} Not paired`, { capture: true }),
-      T('why', 0, 84, W, 82, 'On your phone, open Grok Bot Glass in the Even app and enter the 8-digit code from Shuri.', { color: BRIGHT.secondary }),
+      T('why', 0, 84, W, 82, 'On your phone, open BUD in the Even app and enter the 8-digit code from Shuri.', { color: BRIGHT.secondary }),
       T('saved', 0, 176, W, 58, p.message ?? 'The code works once and expires in 10 minutes.', { color: BRIGHT.meta }),
       foot('press check again    double exit'),
     ],

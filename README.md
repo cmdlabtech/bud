@@ -1,6 +1,6 @@
-# Grok Bot Glass
+# BUD — Bots Up Display
 
-Talk to your Grok Bots from Even G2 glasses (touchpads or R1 ring). See what needs you,
+**BUD (Bots Up Display)** puts your Grok Bots on Even G2 glasses (touchpads or R1 ring). See what needs you,
 read short replies, and speak a message to any bot. Approvals always stay in the Grok Bot app.
 
 ```
@@ -8,7 +8,7 @@ app/      Even Hub plugin (SDK 0.0.14, Vite, TypeScript). Runs in the Even app W
 relay/    Cloudflare Worker + one SQLite Durable Object (Hono). The only server the app talks to.
 bin/glass CLI bots use to post replies and needs-you items (token from env or file, never printed).
 scripts/  dev helpers, fake Grok Bot webhook receiver, pack + bundle URL/secret check, simulator drivers.
-store/    store icon (24x24, 1-bit, 2x2 blocks), simulator screenshots for the listing.
+store/    simulator screenshots for the listing (icon is drawn in the Even portal's editor).
 docs/     setup (with gates), store listing, privacy draft, submission checklist, simulator findings.
 ```
 
@@ -16,12 +16,12 @@ docs/     setup (with gates), store listing, privacy draft, submission checklist
 
 | Setting | Default | Where |
 |---|---|---|
-| App name | Grok Bot Glass | app/app.json `name` (≤20 chars, no "Even") |
-| Package id | tech.cmdlab.grokbotglass | app/app.json `package_id` (permanent once uploaded) |
+| App name | BUD (tagline "Bots Up Display") | app/app.json `name` / `tagline` (≤20 chars, no "Even") |
+| Package id | tech.cmdlab.bud | app/app.json `package_id` (permanent once uploaded) |
 | Version | 1.0.0 | app/app.json `version` |
 | Pilot bots | EDITH, Shuri | relay/src/roster.json `needs_feed`; webhook secrets decide which bots appear |
 | Roster | 16 fleet bots | relay/src/roster.json (only bots with a configured webhook are shown) |
-| Relay host | `grokbot-glass-relay.<subdomain>.workers.dev` | relay/wrangler.jsonc `name`; `GLASS_RELAY_URL` at pack time |
+| Relay host | `bud-relay.<subdomain>.workers.dev` (Worker `bud-relay`) | relay/wrangler.jsonc `name`; `GLASS_RELAY_URL` at pack time |
 | Transcription | xAI speech-to-text, called by the relay (key stays server-side) | relay `XAI_API_KEY` secret |
 | Reply wait | 3 min, then "still working, full reply in Grok Bot" | relay `REPLY_TIMEOUT_MS`, app/src/config.ts |
 | Poll | every 15 s while open, paused in background, refresh on resume | app/src/config.ts |
@@ -43,7 +43,7 @@ npm test && npm run typecheck
 ## Build the package
 
 ```
-GLASS_RELAY_URL=https://grokbot-glass-relay.<subdomain>.workers.dev npm run pack
+GLASS_RELAY_URL=https://bud-relay.<subdomain>.workers.dev npm run pack
 ```
 Builds into `../builds/`, writes the relay origin into both the bundle and `network.whitelist`,
 then runs `scripts/check-ehpk-urls.mjs`. That check fails the build on any URL literal outside
