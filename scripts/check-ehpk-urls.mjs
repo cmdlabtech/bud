@@ -19,15 +19,14 @@ const IGNORE = [/^http:\/\/www\.w3\.org\//];
 // Secret and dev-leak patterns. Values are never printed, only the rule and file.
 const LEAKS = [
   ['xAI API key', /\bxai-[A-Za-z0-9]{20,}/],
-  ['BUD device token', /\bbud_d_[A-Za-z0-9_-]{8,}/],
   ['bearer literal', /Bearer\s+[A-Za-z0-9._-]{20,}/],
   ['private key', /-----BEGIN [A-Z ]*PRIVATE KEY-----/],
   ['Cloudflare API token var', /CLOUDFLARE_API_TOKEN|CF_API_TOKEN/],
-  ['relay admin/bot token var', /ADMIN_TOKEN|BOT_WRITE_TOKEN|WEBHOOK_KEY_/],
-  ['dev fake relay', /fake\.invalid|createFakeRelay|__glassFake/],
-  ['dev pairing hook', /devpair/],
+  ['old relay token var', /ADMIN_TOKEN|BOT_WRITE_TOKEN|WEBHOOK_KEY_/],
+  ['baked-in webhook URL', /api2\.cursor\.sh\/automations\/webhook\/[A-Za-z0-9_-]/],
+  ['dev fake network', /createFakeNet|seedFakeSettings|dev-fake-|devfake/],
   ['localhost URL', /https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/],
-  ['placeholder relay', /REPLACE-ME/],
+  ['placeholder', /REPLACE-ME/],
 ];
 
 const files = [];
@@ -40,7 +39,6 @@ const files = [];
 })(dir);
 
 let bad = 0;
-const allowPlaceholder = process.env.ALLOW_PLACEHOLDER === '1';
 const found = new Map();
 for (const f of files) {
   if (!['.js', '.html', '.css', '.json', '.mjs', '.map', '.txt', '.svg'].includes(extname(f))) continue;
@@ -48,7 +46,6 @@ for (const f of files) {
   const rel = relative(dir, f);
   for (const m of text.matchAll(/https?:\/\/[^\s"'`<>()\\]+/g)) found.set(m[0].replace(/&amp;/g, '&'), rel);
   for (const [label, re] of LEAKS) {
-    if (label === 'placeholder relay' && allowPlaceholder) continue;
     if (re.test(text)) { bad++; console.log(`LEAK  ${label}  (${rel})`); }
   }
 }

@@ -3,32 +3,27 @@
 Last updated: (fill in at publish)
 
 BUD (Bots Up Display) lets you talk to your own Grok Bots from Even Realities G2 glasses. It is published by
-cmdlabtech (CMDLAB). The app talks to one server only: your BUD relay at
-`https://bud-relay.<subdomain>.workers.dev`, run by CMDLAB on Cloudflare Workers.
+cmdlabtech (CMDLAB). BUD has no server of its own and collects nothing for itself.
 
 ## What the app uses and why
-- **Glasses microphone (g2-microphone).** Only while you hold or tap to talk. The recording is sent to the
-  relay, which sends it to xAI's speech-to-text API (api.x.ai) to turn it into text. The relay does not
-  store the audio. You see the text and choose to send it or not.
-- **Network (relay only).** Sends the message text you confirm, loads your bots, their short replies, and
-  items that need you.
-- **Phone storage (Even app local storage).** Keeps your device token, the last list of bots and needs, and
-  at most 5 unsent messages, so the app opens instantly and can send when you're back online.
-
-## What the relay stores
-- A hash of your device token (not the token), device name, and when it was last seen.
-- Messages you send, your bots' short replies, and needs-you items: kept 7 days, then deleted.
-- Short-lived anti-replay ids (10 minutes) and rate-limit counters.
+- **Glasses microphone (g2-microphone).** Only while you hold or tap to talk. The recording is sent from your
+  phone directly to xAI's speech-to-text API (api.x.ai) with your own xAI API key to turn it into text.
+  BUD does not store the audio. You see the text and choose to send it or not.
+- **Network.** Two destinations only: xAI (api.x.ai) for speech to text, and the Grok Bot webhook of the bot
+  you picked (api2.cursor.sh) to deliver the text you confirmed.
+- **Phone storage (Even app local storage).** Your bot list (names, webhook URLs, sender keys) and your xAI
+  API key. These are stored only on your phone, are never sent to CMDLAB, and are shown only partly
+  ("ends abcd") after you save them. Each key is sent only to its own service: the xAI key to xAI, each
+  sender key to that bot's webhook.
 
 ## Who receives your data
-- **Your Grok Bots** receive the message text through their own webhook so they can answer in your
-  Grok Bot chat. See Grok Bot's own privacy terms.
-- **xAI** receives voice recordings for transcription only.
-- **Cloudflare** hosts the relay.
-No ads, no analytics, no selling or sharing of data with anyone else.
+- **xAI** receives your voice recordings for transcription, under your own xAI account. See xAI's privacy terms.
+- **Grok Bot** (the webhook service) receives the message text you confirm, so your bot can work on it and
+  reply in your Grok Bot chat. See Grok Bot's privacy terms.
+No ads, no analytics, no BUD server, no selling or sharing of data with anyone else.
 
 ## Your choices
-Unpair from the app's phone page at any time and ask your bot to revoke the device. Revoked devices
-stop working immediately. Deleting a message history early: ask CMDLAB.
+Delete a bot or remove your xAI key on the BUD phone page at any time. Uninstalling BUD removes its
+local storage from the Even app.
 
 Contact: (CMDLAB contact email)

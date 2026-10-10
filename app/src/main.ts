@@ -1,9 +1,12 @@
 import { AudioInputSource, EvenAppBridge, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
-import { ApiError, RelayClient, type KV } from './api';
-import { MIC_STUB, POLL_MS, RELAY_URL, REPLY_POLL_MS, REPLY_TIMEOUT_MS } from './config';
+import { MIC_STUB, SENT_SCREEN_MS } from './config';
 import { Controller } from './controller';
 import { toGesture } from './gestures';
+import { NetError, sendToBot, webhookBody, type Fetch } from './net';
 import { GlassDisplay } from './render';
+import { cleanName, loadSettings, mask, move, newId, saveSettings, validKey, validWebhookUrl, type KV } from './store';
+import type { BotConfig, Settings } from './types';
+import { sendErrorText } from './controller';
 
 // Bridge acquisition copied from Wondereye (bridge.ts): wait up to 5 s, then fall back to the singleton.
 async function initBridge(): Promise<EvenAppBridge> {
@@ -17,9 +20,9 @@ async function initBridge(): Promise<EvenAppBridge> {
   }
 }
 
-const $ = (id: string) => document.getElementById(id)!;
-const status = (s: string) => { $('status').textContent = s; };
-const showPaired = (paired: boolean) => { $('pairCard').classList.toggle('hidden', paired); $('pairedCard').classList.toggle('hidden', !paired); };
+const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+const say = (id: string, s: string, cls: '' | 'ok' | 'err' = '') => { const el = $(id); el.textContent = s; el.className = 'msg ' + cls; };
+const el = (tag: string, props: Record<string, string> = {}, text = '') => { const e = document.createElement(tag); Object.assign(e, props); if (text) e.textContent = text; return e; };
 
 async function main() {
   const bridge = await initBridge();
@@ -27,61 +30,121 @@ async function main() {
     get: k => bridge.getLocalStorage(k).then(v => v ?? ''),
     set: async (k, v) => { await bridge.setLocalStorage(k, v); },
   };
-  let api = new RelayClient(RELAY_URL, kv);
-  // DEV ONLY: `?fake=1` runs against an in-browser fake relay (no network at all).
-  const fakeMode = import.meta.env.DEV ? new URLSearchParams(location.search).get('fake') : null;
-  if (import.meta.env.DEV && fakeMode) {
-    const { createFakeRelay } = await import('./dev/fake-relay');
-    api = new RelayClient('http://fake.invalid', kv, createFakeRelay(fakeMode) as typeof fetch);
-    if (new URLSearchParams(location.search).has('reset')) { await kv.set('glass.deviceToken', ''); await kv.set('glass.cache.v1', ''); await kv.set('glass.outbox.v1', ''); }
+  let f: Fetch = (...a) => fetch(...a);
+  // DEV ONLY (stripped from builds): `?fake=1` fakes xAI and the webhooks, no network at all.
+  if (import.meta.env.DEV && new URLSearchParams(location.search).get('fake')) {
+    const { createFakeNet, seedFakeSettings } = await import('./dev/fake-net');
+    f = createFakeNet(new URLSearchParams(location.search).get('fake')!) as Fetch;
+    await seedFakeSettings(kv);
   }
+
+  let settings: Settings = await loadSettings(kv);
   const display = new GlassDisplay(bridge);
   const ctl = new Controller({
-    display, api, kv,
+    display, fetch: f,
     mic: { open: () => bridge.audioControl(true, AudioInputSource.Glasses), close: () => bridge.audioControl(false) },
+    loadSettings: () => loadSettings(kv),
     exit: () => { void bridge.shutDownPageContainer(1); },
-    pollMs: POLL_MS, replyPollMs: REPLY_POLL_MS, replyTimeoutMs: REPLY_TIMEOUT_MS,
+    sentMs: SENT_SCREEN_MS,
     micStub: MIC_STUB,
     log: (...a) => console.log(...a),
   });
   bridge.onEvenHubEvent(ev => {
-    if (import.meta.env.DEV && !(ev as any).audioEvent) console.log('[glass] raw', JSON.stringify(ev));
     const g = toGesture(ev);
     if (!g) return;
-    if (g.kind !== 'audio') console.log('[glass] gesture', g.kind, 'index' in g ? g.index : '', 'source' in g ? g.source ?? '' : '', 'on', ctl.screen);
-    ctl.handle(g).catch(err => console.warn('[glass] handler error', err));
+    if (g.kind !== 'audio') console.log('[bud] gesture', g.kind, 'on', ctl.screen);
+    ctl.handle(g).catch(() => console.warn('[bud] handler error'));
   });
-  // Dev only (stripped from builds): the simulator cannot type into the phone form,
-  // so `?devpair=<code>` submits the same pairing call the form does.
-  if (import.meta.env.DEV) {
-    const code = new URLSearchParams(location.search).get('devpair');
-    if (code && !(await api.load())) { try { await api.pair(code, 'Even simulator'); } catch (e) { console.warn('[glass] devpair failed', e); } }
-  }
   await ctl.start();
-  showPaired(api.paired);
 
-  $('pairBtn').addEventListener('click', async () => {
-    const code = ($('code') as HTMLInputElement).value.replace(/\D/g, '');
-    if (code.length !== 8) { status('Enter all 8 digits.'); return; }
-    status('Pairing...');
+  // ---------------------------------------------------------------- phone page
+  let editing: string | null = null; // bot id, or '' for a new bot
+
+  const persist = async (next: Settings) => {
+    settings = await saveSettings(kv, next);
+    render();
+    await ctl.reload();
+  };
+
+  function render() {
+    $('xaiState').textContent = `Key: ${mask(settings.xaiKey)}`;
+    const box = $('bots');
+    box.replaceChildren();
+    if (!settings.bots.length) box.append(el('p', {}, 'No bots yet. Add EDITH or Shuri first.'));
+    settings.bots.forEach((b, i) => {
+      const row = el('div', { className: 'bot' });
+      row.append(el('div', { className: 'name' }, b.name));
+      row.append(el('div', { className: 'meta' }, `Webhook ...${b.url.slice(-6)}   Sender key ${mask(b.key)}`));
+      const acts = el('div', { className: 'row' });
+      const btn = (label: string, cls: string, fn: () => void) => { const x = el('button', { className: cls }, label); x.addEventListener('click', fn); acts.append(x); };
+      btn('Send test', '', () => void testBot(b));
+      btn('Edit', 'ghost', () => openEdit(b.id));
+      if (i > 0) btn('Up', 'ghost', () => void persist({ ...settings, bots: move(settings.bots, i, i - 1) }));
+      if (i < settings.bots.length - 1) btn('Down', 'ghost', () => void persist({ ...settings, bots: move(settings.bots, i, i + 1) }));
+      btn('Delete', 'danger', () => { if (confirm(`Delete ${b.name} from BUD? This only removes it from this phone.`)) void persist({ ...settings, bots: settings.bots.filter(x => x.id !== b.id) }); });
+      row.append(acts);
+      box.append(row);
+    });
+  }
+
+  async function testBot(b: BotConfig) {
+    say('listMsg', `Sending a test to ${b.name}...`);
     try {
-      await api.pair(code, 'G2 via Even app');
-      ($('code') as HTMLInputElement).value = '';
-      status('Paired.');
-      showPaired(true);
-      await ctl.onPaired();
+      await sendToBot(f, b, webhookBody('test', 'BUD test'));
+      say('listMsg', `Test sent. ${b.name} should reply "BUD test received" in Grok Bot.`, 'ok');
     } catch (e) {
-      const k = e instanceof ApiError ? e.kind : 'server';
-      status(k === 'offline' ? "Can't reach the relay. Check your connection." : k === 'rate' ? 'Too many tries. Wait an hour or ask Shuri.' : 'That code did not work. Ask Shuri for a new one.');
+      say('listMsg', `${b.name}: ${sendErrorText(e instanceof NetError ? e.kind : 'server')}`, 'err');
     }
+  }
+
+  function openEdit(id: string) {
+    editing = id;
+    const b = settings.bots.find(x => x.id === id);
+    $('editTitle').textContent = b ? `Edit ${b.name}` : 'Add a bot';
+    $<HTMLInputElement>('botName').value = b?.name ?? '';
+    $<HTMLInputElement>('botUrl').value = b?.url ?? '';
+    $<HTMLInputElement>('botKey').value = ''; // never put a saved key back into the page
+    $('keyState').textContent = b ? `Sender key ${mask(b.key)}. Leave blank to keep it.` : '';
+    say('editMsg', '');
+    $('editCard').classList.remove('hidden');
+    $('editCard').scrollIntoView({ behavior: 'smooth' });
+  }
+  function closeEdit() { editing = null; $<HTMLInputElement>('botKey').value = ''; $('editCard').classList.add('hidden'); }
+
+  $('addBtn').addEventListener('click', () => openEdit(''));
+  $('cancelEdit').addEventListener('click', closeEdit);
+  $('saveBot').addEventListener('click', async () => {
+    const name = cleanName($<HTMLInputElement>('botName').value);
+    const url = $<HTMLInputElement>('botUrl').value.trim();
+    const typedKey = $<HTMLInputElement>('botKey').value.trim();
+    const existing = settings.bots.find(x => x.id === editing);
+    const key = typedKey || existing?.key || '';
+    if (!name) return say('editMsg', 'Give the bot a name.', 'err');
+    if (!validWebhookUrl(url)) return say('editMsg', 'That is not a Grok Bot webhook URL (https://api2.cursor.sh/automations/webhook/...).', 'err');
+    if (!validKey(key)) return say('editMsg', 'Paste the sender key from the routine panel.', 'err');
+    if (!existing && settings.bots.length >= 30) return say('editMsg', 'BUD holds up to 30 bots.', 'err');
+    const bot: BotConfig = { id: existing?.id ?? newId(), name, url, key };
+    const bots = existing ? settings.bots.map(x => (x.id === bot.id ? bot : x)) : [...settings.bots, bot];
+    await persist({ ...settings, bots });
+    closeEdit();
+    say('listMsg', `${name} saved.`, 'ok');
   });
-  $('unpairBtn').addEventListener('click', async () => {
-    await api.forget();
-    showPaired(false);
-    status('Unpaired on this phone. Ask Shuri to revoke the device too.');
-    ctl.stopPolling(); ctl.root = 'pairing';
-    await ctl.go('pairing');
+
+  $('xaiSave').addEventListener('click', async () => {
+    const input = $<HTMLInputElement>('xaiKey');
+    const k = input.value.trim();
+    input.value = '';
+    if (!validKey(k)) return say('xaiMsg', 'Paste your xAI API key.', 'err');
+    await persist({ ...settings, xaiKey: k });
+    say('xaiMsg', 'Key saved on this phone.', 'ok');
   });
+  $('xaiClear').addEventListener('click', async () => {
+    if (!confirm('Remove the xAI key from this phone?')) return;
+    await persist({ ...settings, xaiKey: '' });
+    say('xaiMsg', 'Key removed.', 'ok');
+  });
+
+  render();
 }
 
-main().catch(err => { console.error('[glass] start failed', String(err), (err as Error)?.stack ?? ''); status('Could not connect to the glasses. Open the Even app and connect your G2.'); });
+main().catch(() => { console.error('[bud] start failed'); $('status').textContent = 'Could not connect to the glasses. Open the Even app and connect your G2.'; });

@@ -7,43 +7,43 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 - ✅ package_id `tech.cmdlab.bud` (valid format). ⏳ availability: `evenhub pack ... -c` contacts Even (run at gate time)
 - ✅ edition 202601 · name "BUD" 3 chars, no "Even" · version 1.0.0 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
 - ✅ entrypoint index.html exists in the build folder (pack succeeded)
-- ✅ permissions are objects with name+desc (103 and 145 chars); network has a whitelist of the relay origin only
-- ✅ every permission is used: network (relay fetches), g2-microphone (`audioControl(true, AudioInputSource.Glasses)`)
+- ✅ permissions are objects with name+desc; network whitelist is `https://api.x.ai` and `https://api2.cursor.sh` (exact origins, no wildcards)
+- ✅ every permission is used: network (xAI STT + webhook POST), g2-microphone (`audioControl(true, AudioInputSource.Glasses)`)
 - ✅ no secrets in the bundle ([packaging](https://hub.evenrealities.com/docs/ship/packaging) "Don't commit your API key"); scripts/check-ehpk-urls.mjs passes on the build and fails on a dev build (self-test)
 - ⏳ changelog/release notes text: docs/store-listing.md
 
 ## Store listing & assets
 - ⏳ icon: draw in the Developer Portal's 24x24 pixel editor (Even's tool; 1-bit, 2x2 blocks) ([design guidelines](https://hub.evenrealities.com/docs/build/design-guidelines))
 - ❓ background image: required non-empty, monochrome; spec not in docs → check portal
-- ✅ screenshots from the simulator screenshot API (store/screenshots)
+- ⏳ screenshots: recapture for the 1.0 scope (store/screenshots shows relay-era screens)
 - ✅ display name = app.json name
 - ⏳ brand: name is BUD; confirm naming Grok Bot in the description (store-listing.md risk 1)
 
 ## Privacy
-- ⏳ publish docs/privacy.md at a public URL; it covers network + g2-microphone and names the relay, xAI, Cloudflare
+- ⏳ publish docs/privacy.md at a public URL; it covers network + g2-microphone, phone-only key storage, and names xAI and Grok Bot
 
 ## First run (no black screens)
-- ✅ not paired → on-glasses "Not paired" screen with steps (sim shot 27) · pairing remembered in local storage
-- ✅ first launch draws cached state or "Loading your bots..." before any network call; offline with no cache → Offline screen (sim shots 01, 26, 29)
-- ✅ relay sends CORS headers (`Access-Control-Allow-Origin: *`, preflight 204, verified under wrangler dev)
+- ✅ nothing set up → on-glasses "No bots set up yet" screen pointing to the phone page; no network call at launch
+- ✅ xAI STT allows CORS (`*`)
+- ❌ Grok Bot webhook CORS: blocks the WebView origin (docs/setup.md step 0). Blocker.
 
 ## Locked phone (Beta build only — ❓ cannot test on the box)
 - ⏳ phone locked + Even app backgrounded → app renders, no spinner/black screen
-- ⏳ core flow on glasses + ring alone (pairing is the one-time phone step)
-- ⏳ 2 minutes idle → still responsive (polling every 15 s, timers paused in background)
-- ⏳ 5-minute lock test ([beta testing](https://hub.evenrealities.com/docs/test/beta-testing)); Android may cold-start the WebView → state is in local storage (cache, outbox, token) ([background & lifecycle](https://hub.evenrealities.com/docs/build/background-lifecycle))
+- ⏳ core flow on glasses + ring alone (setup on the phone page is the one-time step)
+- ⏳ 2 minutes idle → still responsive (no polling at all in 1.0)
+- ⏳ 5-minute lock test ([beta testing](https://hub.evenrealities.com/docs/test/beta-testing)); Android may cold-start the WebView → settings are in local storage ([background & lifecycle](https://hub.evenrealities.com/docs/build/background-lifecycle))
 - ✅ mic is re-armed on every talk (never assumed live after background); backgrounding while listening cancels and closes the mic
 
 ## Exit & lifecycle
-- ✅ root double press → `shutDownPageContainer(1)` (Home page 1, Offline-as-root, Pairing, empty Home). Sim: shots 22, 31
+- ✅ root double press → `shutDownPageContainer(1)` (bot list, setup screen)
 - ❓ phone WebView closes after exit; Conversate launches after exit → check on device
 
 ## Permission denial
 - ✅ mic: no audio within 3 s → "No sound from the glasses mic. In the Even app, allow the microphone..." (sim shot 41) ([beta testing](https://hub.evenrealities.com/docs/test/beta-testing) check 3)
-- ✅ network: offline screen / "offline, saved HH:MM" header / queued sends
+- ✅ network: send failure screen with reason and press-to-retry; STT failure reason on the transcript
 
 ## Every gesture has a visible response
-- ✅ boundary swipes flash "Top of list", "End of list", "No older messages here", "End of reply"; snooze/hold show a done line
+- ✅ boundary swipes flash "Top of list" / "End of list"; every screen has a footer hint
 
 ## Final sanity loop (from the doc) — all ⏳ at gate time
 1. `evenhub pack app.json dist -o ... -c` · 2. Beta install + 5-minute lock · 3. root double-tap → dialog + WebView closes · 4. Conversate launches · 5. privacy covers all permissions

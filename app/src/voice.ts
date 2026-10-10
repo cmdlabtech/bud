@@ -10,7 +10,7 @@ export const SILENCE_THRESHOLD = 200;        // RMS below this = silence (0-3276
 export const SILENCE_AFTER_SPEECH_MS = 2000; // auto-stop after 2 s of silence once speech started
 export const SILENCE_NO_SPEECH_MS = 5000;    // auto-stop if nothing is said for 5 s
 export const MAX_RECORDING_MS = 30000;       // hard cap
-export const MAX_AUDIO_BYTES = 1_000_000;    // ~31 s of PCM, under the relay's 2 MB cap
+export const MAX_AUDIO_BYTES = 1_000_000;    // ~31 s of PCM, well under xAI's upload limit
 
 export function rmsOfChunk(chunk: Uint8Array): number {
   let sum = 0;

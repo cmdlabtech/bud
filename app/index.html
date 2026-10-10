@@ -7,27 +7,59 @@
 <style>
   :root { color-scheme: dark; font-family: -apple-system, system-ui, sans-serif; }
   body { margin: 0; background: #0b0d0c; color: #e8f5ec; padding: 24px 20px calc(24px + env(safe-area-inset-bottom)); }
-  h1 { font-size: 26px; margin: 0; letter-spacing: 1px; } .sub { margin: 0 0 8px; color: #6f8a7b; font-size: 14px; } p { color: #9fb5a8; line-height: 1.45; margin: 8px 0; }
+  h1 { font-size: 26px; margin: 0; letter-spacing: 1px; } h2 { font-size: 17px; margin: 0 0 6px; }
+  .sub { margin: 0 0 8px; color: #6f8a7b; font-size: 14px; } p { color: #9fb5a8; line-height: 1.45; margin: 8px 0; }
   .card { background: #141816; border: 1px solid #22302a; border-radius: 14px; padding: 16px; margin-top: 16px; }
-  input { width: 100%; box-sizing: border-box; font-size: 28px; letter-spacing: 6px; text-align: center; padding: 12px; border-radius: 10px; border: 1px solid #2f4a3c; background: #0b0d0c; color: #e8f5ec; }
-  button { width: 100%; margin-top: 12px; font-size: 17px; padding: 14px; border-radius: 10px; border: 0; background: #3ddc84; color: #04120a; font-weight: 600; }
+  label { display: block; font-size: 13px; color: #9fb5a8; margin: 10px 0 4px; }
+  input { width: 100%; box-sizing: border-box; font-size: 16px; padding: 12px; border-radius: 10px; border: 1px solid #2f4a3c; background: #0b0d0c; color: #e8f5ec; }
+  button { font-size: 15px; padding: 11px 14px; border-radius: 10px; border: 0; background: #3ddc84; color: #04120a; font-weight: 600; }
+  button.wide { width: 100%; margin-top: 12px; font-size: 17px; padding: 14px; }
   button.ghost { background: transparent; color: #9fb5a8; border: 1px solid #2f4a3c; }
-  #status { min-height: 1.4em; } .hidden { display: none; }
+  button.danger { background: transparent; color: #ff8a80; border: 1px solid #5a2f2b; }
+  .bot { border-top: 1px solid #22302a; padding: 12px 0; } .bot:first-child { border-top: 0; }
+  .bot .name { font-weight: 600; font-size: 16px; } .bot .meta { color: #6f8a7b; font-size: 13px; margin: 2px 0 8px; word-break: break-all; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; } .row button { flex: 0 0 auto; }
+  .msg { min-height: 1.3em; font-size: 14px; margin: 6px 0 0; } .ok { color: #3ddc84; } .err { color: #ff8a80; }
+  p.meta { color: #6f8a7b; font-size: 13px; }
+  .hidden { display: none; }
 </style>
 </head>
 <body>
   <h1>BUD</h1>
   <p class="sub">Bots Up Display</p>
-  <p>Talk to your Grok Bots from your G2. Approvals stay in the Grok Bot app.</p>
-  <div class="card" id="pairCard">
-    <p>Enter the 8-digit code Shuri gave you. It works once and expires in 10 minutes.</p>
-    <input id="code" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="00000000" />
-    <button id="pairBtn">Pair glasses</button>
+  <p>Pick a bot on your G2, speak a task, and BUD sends it. Replies come as Grok Bot notifications. Approvals stay in the Grok Bot app.</p>
+
+  <div class="card">
+    <h2>Speech to text</h2>
+    <p>Your xAI API key turns your voice into text. It is stored only on this phone.</p>
+    <p class="meta" id="xaiState"></p>
+    <label for="xaiKey">xAI API key</label>
+    <input id="xaiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste to set or replace" />
+    <div class="row" style="margin-top:10px"><button id="xaiSave">Save key</button><button class="danger" id="xaiClear">Remove key</button></div>
+    <p class="msg" id="xaiMsg" role="status"></p>
   </div>
-  <div class="card hidden" id="pairedCard">
-    <p><strong>Paired.</strong> Look at your glasses. Press to open a bot, long press to talk.</p>
-    <button class="ghost" id="unpairBtn">Unpair this phone</button>
+
+  <div class="card">
+    <h2>Bots</h2>
+    <p>Order here is the order on your glasses.</p>
+    <div id="bots"></div>
+    <p class="msg" id="listMsg" role="status"></p>
+    <button class="wide ghost" id="addBtn">Add a bot</button>
   </div>
+
+  <div class="card hidden" id="editCard">
+    <h2 id="editTitle">Add a bot</h2>
+    <label for="botName">Name on the glasses</label>
+    <input id="botName" maxlength="24" autocomplete="off" placeholder="EDITH" />
+    <label for="botUrl">Webhook URL (from the bot's Glass inbox routine)</label>
+    <input id="botUrl" type="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://api2.cursor.sh/automations/webhook/..." />
+    <label for="botKey">Sender key</label>
+    <input id="botKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the sender key" />
+    <p class="meta" id="keyState"></p>
+    <div class="row" style="margin-top:10px"><button id="saveBot">Save bot</button><button class="ghost" id="cancelEdit">Cancel</button></div>
+    <p class="msg" id="editMsg" role="status"></p>
+  </div>
+
   <p id="status" role="status"></p>
   <script type="module" src="/src/main.ts"></script>
 </body>

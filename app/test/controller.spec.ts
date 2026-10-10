@@ -1,299 +1,233 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, type KV } from '../src/api';
-import { CACHE_KEY, Controller, OUTBOX_KEY } from '../src/controller';
+import { Controller, MIC_OFF_TEXT, MIC_WATCHDOG_MS } from '../src/controller';
 import type { Display } from '../src/render';
 import type { PageSpec } from '../src/screens';
+import type { Settings } from '../src/types';
 import { syntheticChunk } from '../src/voice';
-import type { Bot, Message, Need } from '../src/types';
 
 class FakeDisplay implements Display {
   current: PageSpec | null = null; shows: string[] = []; updates: [string, string][] = [];
   async show(p: PageSpec) { this.current = p; this.shows.push(p.key); }
   async update(n: string, c: string) { this.updates.push([n, c]); }
-  text(name: string) { const c = this.current?.containers.find(x => x.name === name); return c?.kind === 'text' ? c.content : c?.kind === 'list' ? c.items.join('|') : ''; }
-}
-class MemKV implements KV { m = new Map<string, string>(); async get(k: string) { return this.m.get(k) ?? ''; } async set(k: string, v: string) { this.m.set(k, v); } }
-
-const BOTS: Bot[] = [
-  { id: 'edith', name: 'EDITH', label: '', needs: 0, unread: 0 },
-  { id: 'shuri', name: 'Shuri', label: '', needs: 1, unread: 2 },
-];
-const NEEDS: Need[] = [{ id: 'n1', bot_id: 'shuri', bot_name: 'Shuri', kind: 'approval', title: 'Approve invoice', detail: '', created_at: Date.now(), action: null }];
-
-function fakeApi() {
-  const msgs: Record<string, Message> = {};
-  let online = true; let paired = true;
-  const api: any = {
-    get paired() { return paired; },
-    load: vi.fn(async () => paired),
-    forget: vi.fn(async () => { paired = false; }),
-    bots: vi.fn(async () => { if (!online) throw new ApiError('offline'); return structuredClone(BOTS); }),
-    needs: vi.fn(async () => { if (!online) throw new ApiError('offline'); return structuredClone(NEEDS); }),
-    thread: vi.fn(async (id: string) => { if (!online) throw new ApiError('offline'); const m = Object.values(msgs).filter(x => x.bot_id === id); return { messages: m, total: m.length }; }),
-    markRead: vi.fn(async () => ({ ok: true })),
-    transcribe: vi.fn(async () => { if (!online) throw new ApiError('offline'); return 'Check the deploy status'; }),
-    send: vi.fn(async (bot_id: string, text: string) => {
-      if (!online) throw new ApiError('offline');
-      const id = `m${Object.keys(msgs).length + 1}`;
-      msgs[id] = { id, bot_id, text, status: 'pending', reply_short: null, created_at: Date.now(), replied_at: null };
-      return { message_id: id, status: 'sent' };
-    }),
-    message: vi.fn(async (id: string) => structuredClone(msgs[id])),
-    act: vi.fn(async () => { if (!online) throw new ApiError('offline'); return { ok: true, forwarded: true }; }),
-  };
-  return { api, msgs, setOnline: (v: boolean) => { online = v; }, setPaired: (v: boolean) => { paired = v; } };
+  text(name: string) { const c = this.current?.containers.find(x => x.name === name); return c?.kind === 'text' ? c.content : ''; }
 }
 
-function setup(opts: { cache?: boolean; online?: boolean; paired?: boolean } = {}) {
-  const display = new FakeDisplay(); const kv = new MemKV(); const f = fakeApi();
-  if (opts.online === false) f.setOnline(false);
-  if (opts.paired === false) f.setPaired(false);
-  if (opts.cache) kv.m.set(CACHE_KEY, JSON.stringify({ bots: BOTS, needs: NEEDS, savedAt: Date.now() - 600_000 }));
+const HOOK = (id: string) => `https://api2.cursor.sh/automations/webhook/${id}`;
+const SETTINGS: Settings = {
+  xaiKey: 'xai-test-key-0000',
+  bots: [
+    { id: 'b1', name: 'EDITH', url: HOOK('edith123'), key: 'sender-key-edith' },
+    { id: 'b2', name: 'Shuri', url: HOOK('shuri456'), key: 'sender-key-shuri' },
+  ],
+};
+
+type Call = { url: string; init: RequestInit };
+function fakeFetch(opts: { stt?: number; hook?: number; offline?: boolean } = {}) {
+  const calls: Call[] = [];
+  const f = vi.fn(async (input: RequestInfo | URL, init: RequestInit = {}) => {
+    const url = String(input); calls.push({ url, init });
+    if (opts.offline) throw new TypeError('Failed to fetch');
+    if (url === 'https://api.x.ai/v1/stt') return new Response(JSON.stringify({ text: ' Check the deploy status ' }), { status: opts.stt ?? 200 });
+    return new Response('{}', { status: opts.hook ?? 200 });
+  });
+  return { f, calls };
+}
+
+function setup(o: { settings?: Settings; stt?: number; hook?: number; offline?: boolean } = {}) {
+  const display = new FakeDisplay();
+  const net = fakeFetch(o);
   const exit = vi.fn();
   const mic = { open: vi.fn(async () => true), close: vi.fn(async () => true) };
-  const ctl = new Controller({ display, api: f.api, kv, mic, exit, pollMs: 15000, replyPollMs: 3000, replyTimeoutMs: 180000 });
-  return { ctl, display, kv, f, exit, mic };
+  let settings = structuredClone(o.settings ?? SETTINGS);
+  const ctl = new Controller({ display, fetch: net.f as unknown as typeof fetch, mic, loadSettings: async () => structuredClone(settings), exit, sentMs: 1500 });
+  return { ctl, display, net, exit, mic, setSettings: (s: Settings) => { settings = s; } };
 }
 const flush = async () => { for (let i = 0; i < 10; i++) await Promise.resolve(); await vi.advanceTimersByTimeAsync(0); };
+
+async function speak(ctl: Controller) {
+  for (let t = 0; t < 10; t++) ctl.onAudio(syntheticChunk(t));
+}
 
 beforeEach(() => { vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-10T14:00:00Z')); });
 afterEach(() => { vi.useRealTimers(); });
 
-describe('controller', () => {
-  it('first screen is the cached home, then live (never blank)', async () => {
-    const { ctl, display, f } = setup({ cache: true });
-    f.api.bots.mockImplementationOnce(() => new Promise(r => setTimeout(() => r(structuredClone(BOTS)), 1000)));
-    const p = ctl.start();
-    await flush();
-    expect(display.shows[0]).toBe('home0');
-    expect(display.text('hdr')).toMatch(/saved/);
-    expect(display.text('rows')).toContain('Shuri');
-    await vi.advanceTimersByTimeAsync(1000); await p;
-    expect(ctl.freshness).toBe('live');
-  });
-  it('no cache: loading screen first, then home', async () => {
+describe('home: bot list', () => {
+  it('shows the configured bots in order with the cursor on the first', async () => {
     const { ctl, display } = setup();
     await ctl.start();
-    expect(display.shows[0]).toBe('home0');
-    expect(display.shows.length).toBeGreaterThanOrEqual(2);
-    expect(display.text('rows')).toContain('Needs you (1)');
-    expect(display.text('rows')).toContain('Shuri - Approve invoice');
+    expect(ctl.screen).toBe('home');
+    expect(display.text('hdr')).toBe('BUD');
+    expect(display.text('rows').split('\n')[0]).toMatch(/^▶ EDITH$/);
+    expect(display.text('rows')).toContain('Shuri');
+    expect(display.text('rows')).not.toMatch(/need|new|Needs you/i);
   });
-  it('opened offline with no cache: offline is root, double press exits', async () => {
-    const { ctl, display, exit } = setup({ online: false });
+  it('shows setup when no bots are configured, and press re-checks', async () => {
+    const { ctl, display, setSettings } = setup({ settings: { bots: [], xaiKey: '' } });
     await ctl.start();
-    expect(ctl.screen).toBe('offline'); expect(ctl.root).toBe('offline');
-    expect(display.text('foot')).toContain('double exit');
+    expect(ctl.screen).toBe('setup');
+    expect(display.text('state')).toMatch(/No bots set up/);
+    setSettings(SETTINGS);
+    await ctl.handle({ kind: 'press' });
+    expect(ctl.screen).toBe('home');
+  });
+  it('swipes move the cursor and nudge at the ends', async () => {
+    const { ctl, display } = setup();
+    await ctl.start();
+    await ctl.handle({ kind: 'down' });
+    expect(ctl.homeSel).toBe(1);
+    expect(display.updates.at(-2)?.[1].split('\n')[1]).toMatch(/^▶ Shuri/);
+    await ctl.handle({ kind: 'down' });
+    expect(display.updates.at(-1)).toEqual(['hdr', 'End of list']);
+  });
+  it('double press on the list exits', async () => {
+    const { ctl, exit } = setup();
+    await ctl.start();
     await ctl.handle({ kind: 'double' });
     expect(exit).toHaveBeenCalled();
   });
-  it('opened offline with cache: cached home marked offline', async () => {
-    const { ctl, display } = setup({ online: false, cache: true });
+  it('without an xAI key, picking a bot shows the key-missing setup page', async () => {
+    const { ctl, display } = setup({ settings: { ...SETTINGS, xaiKey: '' } });
     await ctl.start();
-    expect(ctl.screen).toBe('home');
-    expect(display.updates.some(([n, c]) => n === 'hdr' && /offline, saved/.test(c))).toBe(true);
-  });
-  it('not paired: pairing is root; double exits', async () => {
-    const { ctl, exit } = setup({ paired: false });
-    await ctl.start();
-    expect(ctl.screen).toBe('pairing');
-    await ctl.handle({ kind: 'double' }); expect(exit).toHaveBeenCalled();
-  });
-  it('home double press at root opens system exit; on page 2 it goes back', async () => {
-    const { ctl, exit } = setup();
-    await ctl.start();
-    ctl.homePageNo = 1; await ctl.handle({ kind: 'double' });
-    expect(exit).not.toHaveBeenCalled(); expect(ctl.homePageNo).toBe(0);
-    await ctl.handle({ kind: 'double' }); expect(exit).toHaveBeenCalled();
-  });
-  it('swipe moves the cursor and counter; press opens the selected thread and marks read', async () => {
-    const { ctl, display, f } = setup();
-    await ctl.start();
-    await ctl.handle({ kind: 'down' });
-    expect(display.updates.at(-2)![0]).toBe('rows'); expect(display.updates.at(-2)![1]).toMatch(/▶ ■ Shuri/);
-    expect(display.updates.at(-1)).toEqual(['pos', '△\n\n\n2/3\n\n\n▼']);
-    await ctl.handle({ kind: 'up' }); await ctl.handle({ kind: 'up' }); // clamps at the top
-    expect(ctl.homeSel).toBe(0);
-    await ctl.handle({ kind: 'down', source: 'ring' });
-    await ctl.handle({ kind: 'press', source: 'ring' });
-    expect(ctl.screen).toBe('thread'); expect(ctl.botId).toBe('shuri');
-    await flush();
-    expect(f.api.markRead).toHaveBeenCalledWith('shuri');
-  });
-  it('full voice flow from Home: long press talks to selected bot, release, transcript, send, reply opens thread', async () => {
-    const { ctl, display, f, mic } = setup();
-    await ctl.start();
-    await ctl.handle({ kind: 'down' }); await ctl.handle({ kind: 'down' }); // EDITH (Shuri sorts first)
-    await ctl.handle({ kind: 'long' });
-    expect(ctl.screen).toBe('listening'); expect(ctl.botId).toBe('edith'); expect(mic.open).toHaveBeenCalled();
-    for (let i = 0; i < 12; i++) await ctl.handle({ kind: 'audio', pcm: syntheticChunk(i) });
-    await ctl.handle({ kind: 'longRelease' });
-    await flush();
-    expect(ctl.screen).toBe('transcript'); expect(display.text('draft')).toBe('Check the deploy status');
     await ctl.handle({ kind: 'press' });
-    expect(ctl.screen).toBe('sent'); expect(f.api.send).toHaveBeenCalledWith('edith', 'Check the deploy status');
-    expect(display.text('status')).toContain('Waiting for EDITH');
-    f.msgs.m1.status = 'replied'; f.msgs.m1.reply_short = 'Deploy is green.';
-    await vi.advanceTimersByTimeAsync(3000);
-    expect(display.updates.some(([n, c]) => n === 'status' && c.includes('replied'))).toBe(true);
-    await vi.advanceTimersByTimeAsync(1300); await flush();
-    expect(ctl.screen).toBe('thread'); expect(display.text('bot2')).toContain('Deploy is green.');
+    expect(ctl.screen).toBe('setup');
+    expect(display.text('state')).toMatch(/Speech key missing/);
   });
-  it('Thread: plain press starts tap-to-talk; press stops; double on transcript cancels; long press redoes', async () => {
-    const { ctl, display } = setup();
-    await ctl.start(); await ctl.openThread('edith');
+  it('reload picks up phone-page changes while on the list', async () => {
+    const { ctl, display, setSettings } = setup();
+    await ctl.start();
+    setSettings({ ...SETTINGS, bots: [SETTINGS.bots[1], SETTINGS.bots[0]] });
+    await ctl.reload();
+    expect(display.text('rows').split('\n')[0]).toMatch(/Shuri/);
+  });
+});
+
+describe('talk flow: press to listen, transcript, send, back to list', () => {
+  it('press listens, press stops, xAI transcribes with the user key', async () => {
+    const { ctl, display, net, mic } = setup();
+    await ctl.start();
+    await ctl.handle({ kind: 'down' }); // Shuri
     await ctl.handle({ kind: 'press' });
-    expect(ctl.screen).toBe('listening'); expect(ctl.holdMode).toBe(false);
-    expect(display.text('hint')).toContain('Press to stop');
-    await ctl.handle({ kind: 'longRelease' }); expect(ctl.screen).toBe('listening'); // ignored in tap mode
-    for (let i = 0; i < 5; i++) await ctl.handle({ kind: 'audio', pcm: syntheticChunk(i) });
-    await ctl.handle({ kind: 'press' }); await flush();
-    expect(ctl.screen).toBe('transcript');
-    await ctl.handle({ kind: 'long' }); expect(ctl.screen).toBe('listening'); expect(ctl.holdMode).toBe(true);
-    await ctl.handle({ kind: 'double' }); expect(ctl.screen).toBe('thread');
-  });
-  it('silence timeout ends listening; nothing said gives a clear empty transcript', async () => {
-    const { ctl, display, f } = setup();
-    await ctl.start(); await ctl.openThread('edith');
-    await ctl.handle({ kind: 'long' });
-    for (let i = 0; i < 50; i++) await ctl.handle({ kind: 'audio', pcm: new Uint8Array(3200) });
+    expect(ctl.screen).toBe('listening');
+    expect(mic.open).toHaveBeenCalled();
+    expect(display.text('hdr')).toBe('To Shuri');
+    await speak(ctl);
+    await ctl.handle({ kind: 'press' });
     await flush();
     expect(ctl.screen).toBe('transcript');
-    expect(display.text('draft')).toContain('Nothing heard');
-    expect(f.api.transcribe).not.toHaveBeenCalled();
+    expect(ctl.draft).toBe('Check the deploy status');
+    const stt = net.calls.find(c => c.url === 'https://api.x.ai/v1/stt')!;
+    expect((stt.init.headers as Record<string, string>).Authorization).toBe('Bearer xai-test-key-0000');
+    const form = stt.init.body as FormData;
+    expect(form.get('model')).toBe('grok-voice-transcribe-2.0');
+    expect(form.get('file')).toBeInstanceOf(Blob);
   });
-  it('backgrounding while listening cancels and closes the mic', async () => {
-    const { ctl, mic } = setup();
-    await ctl.start(); await ctl.openThread('edith');
-    await ctl.handle({ kind: 'long' });
-    await ctl.handle({ kind: 'foregroundExit' });
-    expect(ctl.screen).toBe('thread'); expect(mic.close).toHaveBeenCalled();
-  });
-  it('contextual menu overlay does not pause polling; a real background does', async () => {
-    const { ctl, f } = setup();
-    await ctl.start();
-    await ctl.handle({ kind: 'foregroundEnter' }); // overlay opened while in foreground
-    await ctl.handle({ kind: 'foregroundExit' });  // overlay closed
-    expect(ctl.inForeground).toBe(true);
-    const calls = f.api.bots.mock.calls.length;
-    await vi.advanceTimersByTimeAsync(15000);
-    expect(f.api.bots.mock.calls.length).toBe(calls + 1);
-    await ctl.handle({ kind: 'foregroundExit' }); // real background
-    expect(ctl.inForeground).toBe(false);
-    await vi.advanceTimersByTimeAsync(45000);
-    expect(f.api.bots.mock.calls.length).toBe(calls + 1);
-    await ctl.handle({ kind: 'foregroundEnter' }); await flush(); // resume refreshes now
-    expect(f.api.bots.mock.calls.length).toBe(calls + 2);
-  });
-  it('offline send is queued, persisted, and flushed by the next poll', async () => {
-    const { ctl, display, f, kv } = setup();
-    await ctl.start(); await ctl.openThread('edith');
-    ctl.draft = 'Remind me at 5'; ctl.screen = 'transcript';
-    f.setOnline(false);
-    await ctl.handle({ kind: 'press' });
-    expect(display.text('status')).toContain('Saved. Will send when online.');
-    expect(JSON.parse(kv.m.get(OUTBOX_KEY)!)).toHaveLength(1);
-    await vi.advanceTimersByTimeAsync(15000);
-    expect(f.api.send).toHaveBeenCalledTimes(1);
-    f.setOnline(true);
-    await vi.advanceTimersByTimeAsync(15000); await flush();
-    expect(f.api.send).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(kv.m.get(OUTBOX_KEY)!)).toHaveLength(0);
-    expect(display.text('status')).toContain('Waiting for EDITH');
-  });
-  it('outbox survives a restart', async () => {
-    const a = setup();
-    a.kv.m.set(OUTBOX_KEY, JSON.stringify([{ bot_id: 'shuri', text: 'queued hi', ts: Date.now() - 1000 }, { bot_id: 'shuri', text: 'too old', ts: Date.now() - 13 * 3600_000 }]));
-    await a.ctl.start(); await flush();
-    expect(a.f.api.send).toHaveBeenCalledTimes(1);
-    expect(a.f.api.send).toHaveBeenCalledWith('shuri', 'queued hi');
-  });
-  it('needs: list, item, hold removes it and shows the done text; snooze too', async () => {
-    const { ctl, display, f } = setup();
-    await ctl.start();
-    await ctl.handle({ kind: 'press', index: 0 });
-    expect(ctl.screen).toBe('needsList');
-    await ctl.handle({ kind: 'press', index: 0 });
-    expect(ctl.screen).toBe('needItem'); expect(display.text('note')).toContain('Approve in Grok Bot app.');
-    await ctl.handle({ kind: 'press', index: 0 });
-    expect(f.api.act).toHaveBeenCalledWith('n1', 'hold');
-    expect(display.updates.at(-1)).toEqual(['hdr', 'Held. It waits for you.']);
-    await vi.advanceTimersByTimeAsync(1500);
-    expect(ctl.screen).toBe('needsList'); expect(display.text('hdr')).toContain('All clear');
-  });
-  it('needs: offline act shows a clear message and keeps the item', async () => {
-    const { ctl, display, f } = setup();
-    await ctl.start(); await ctl.handle({ kind: 'press', index: 0 }); await ctl.handle({ kind: 'press', index: 0 });
-    f.setOnline(false);
-    await ctl.handle({ kind: 'press', index: 1 });
-    expect(display.updates.at(-1)![1]).toContain('Offline');
-    expect(ctl.needs).toHaveLength(1);
-  });
-  it('long reply: thread shows first part, swipe down opens paged reader', async () => {
-    const { ctl, display, f } = setup();
-    await ctl.start();
-    f.msgs.m9 = { id: 'm9', bot_id: 'edith', text: 'status?', status: 'replied', reply_short: 'All good here and the build is green. '.repeat(30), created_at: Date.now(), replied_at: Date.now() };
-    await ctl.openThread('edith'); await flush();
-    expect(display.text('foot')).toContain('swipe down read all');
-    await ctl.handle({ kind: 'down' });
-    expect(ctl.screen).toBe('reader'); expect(display.text('hdr')).toMatch(/reply 1 of \d/);
-    await ctl.handle({ kind: 'down' }); expect(display.text('hdr')).toMatch(/reply 2 of/);
-    await ctl.handle({ kind: 'up' }); expect(display.text('hdr')).toMatch(/reply 1 of/);
-    await ctl.handle({ kind: 'down' }); await ctl.handle({ kind: 'down' }); await ctl.handle({ kind: 'down' });
-    expect(display.updates.at(-1)).toEqual(['hdr', 'End of reply']);
-    await ctl.handle({ kind: 'double' }); expect(ctl.screen).toBe('thread');
-  });
-  it('every boundary swipe gets visible feedback, then the header comes back', async () => {
-    const { ctl, display } = setup();
-    await ctl.start();
-    const hdr = display.text('hdr');
-    await ctl.handle({ kind: 'up' });
-    expect(display.updates.at(-1)).toEqual(['hdr', 'Top of list']);
-    await vi.advanceTimersByTimeAsync(1500);
-    expect(display.updates.at(-1)).toEqual(['hdr', hdr]);
-    await ctl.openThread('edith'); await flush();
-    await ctl.handle({ kind: 'up' });
-    expect(display.updates.at(-1)![1]).toMatch(/No messages yet|No older/);
-  });
-  it('unpaired by the relay (401) goes to pairing', async () => {
-    const { ctl, f } = setup();
-    await ctl.start();
-    f.api.bots.mockRejectedValueOnce(new ApiError('auth', 401));
-    await ctl.refresh();
-    expect(ctl.screen).toBe('pairing');
-  });
-  it('menu items work (Talk to EDITH, Needs you, Cancel)', async () => {
+  it('long press holds to talk and release stops', async () => {
     const { ctl } = setup();
     await ctl.start();
-    await ctl.handle({ kind: 'menu', itemId: 2 }); expect(ctl.screen).toBe('listening'); expect(ctl.botId).toBe('edith');
-    await ctl.handle({ kind: 'menu', itemId: 21 }); expect(ctl.screen).toBe('home');
-    await ctl.handle({ kind: 'menu', itemId: 3 }); expect(ctl.screen).toBe('needsList');
+    await ctl.handle({ kind: 'long' });
+    expect(ctl.holdMode).toBe(true);
+    await speak(ctl);
+    await ctl.handle({ kind: 'longRelease' });
+    await flush();
+    expect(ctl.screen).toBe('transcript');
   });
-  it('mic permission denied (no audio within 3 s) shows a clear next step', async () => {
-    const { ctl, display, mic } = setup();
-    mic.open.mockResolvedValueOnce(false);
-    await ctl.start(); await ctl.openThread('edith');
+  it('press on the transcript posts the voice body to the bot webhook, shows Sent, then returns to the list', async () => {
+    const { ctl, display, net } = setup();
+    await ctl.start();
+    await ctl.handle({ kind: 'press' });
+    await speak(ctl);
+    await ctl.handle({ kind: 'press' });
+    await flush();
+    await ctl.handle({ kind: 'press' });
+    await flush();
+    const hook = net.calls.find(c => c.url.startsWith('https://api2.cursor.sh/'))!;
+    expect(hook.url).toBe(SETTINGS.bots[0].url);
+    const h = hook.init.headers as Record<string, string>;
+    expect(h['Content-Type']).toBe('application/json');
+    expect(h.Authorization).toBe('Bearer sender-key-edith');
+    expect(h['X-Automation-Key']).toBe('sender-key-edith');
+    const body = JSON.parse(String(hook.init.body));
+    expect(body).toMatchObject({ source: 'bud', kind: 'voice', text: 'Check the deploy status' });
+    expect(body.request_id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(ctl.screen).toBe('sent');
+    expect(display.text('status')).toMatch(/Sent to EDITH/);
+    await vi.advanceTimersByTimeAsync(1499);
+    expect(ctl.screen).toBe('sent');
+    await vi.advanceTimersByTimeAsync(2);
+    expect(ctl.screen).toBe('home');
+    expect(net.calls.filter(c => c.url.startsWith('https://api2.cursor.sh/'))).toHaveLength(1); // one try, no polling
+  });
+  it('double on the transcript cancels to the list; long press redoes', async () => {
+    const { ctl } = setup();
+    await ctl.start();
+    await ctl.handle({ kind: 'press' }); await speak(ctl); await ctl.handle({ kind: 'press' }); await flush();
     await ctl.handle({ kind: 'long' });
     expect(ctl.screen).toBe('listening');
-    await vi.advanceTimersByTimeAsync(3000);
-    expect(ctl.screen).toBe('transcript'); expect(display.text('draft')).toContain('allow the microphone');
-    expect(mic.close).toHaveBeenCalled();
-    await ctl.handle({ kind: 'press' }); expect(ctl.screen).toBe('transcript'); // nothing to send
-    await ctl.handle({ kind: 'double' }); expect(ctl.screen).toBe('thread');
+    await ctl.handle({ kind: 'double' });
+    expect(ctl.screen).toBe('home');
   });
-  it('mic returning false but audio flowing still records (simulator behaviour)', async () => {
-    const { ctl, mic } = setup();
-    mic.open.mockResolvedValueOnce(false);
-    await ctl.start(); await ctl.openThread('edith');
-    await ctl.handle({ kind: 'long' });
-    for (let i = 0; i < 5; i++) await ctl.handle({ kind: 'audio', pcm: syntheticChunk(i) });
-    await vi.advanceTimersByTimeAsync(3000);
-    expect(ctl.screen).toBe('listening');
+  it('a failed send shows a short error and press retries with a new request', async () => {
+    const { ctl, display, net } = setup({ hook: 500 });
+    await ctl.start();
+    await ctl.handle({ kind: 'press' }); await speak(ctl); await ctl.handle({ kind: 'press' }); await flush();
+    await ctl.handle({ kind: 'press' }); await flush();
+    expect(ctl.screen).toBe('sendError');
+    expect(display.text('state')).toMatch(/Not sent to EDITH/);
+    await ctl.handle({ kind: 'press' }); await flush();
+    expect(net.calls.filter(c => c.url.startsWith('https://api2.cursor.sh/'))).toHaveLength(2);
+    await ctl.handle({ kind: 'double' });
+    expect(ctl.screen).toBe('home');
   });
-  it('long press on Needs row asks to pick a bot', async () => {
+  it('a rejected sender key says to check the bot on the phone page', async () => {
+    const { ctl, display } = setup({ hook: 401 });
+    await ctl.start();
+    await ctl.handle({ kind: 'press' }); await speak(ctl); await ctl.handle({ kind: 'press' }); await flush();
+    await ctl.handle({ kind: 'press' }); await flush();
+    expect(display.text('why')).toMatch(/sender key was not accepted/);
+  });
+  it('a network failure (also what a CORS block looks like) gives a clear error', async () => {
+    const { ctl, display } = setup({ offline: true });
+    await ctl.start();
+    await ctl.handle({ kind: 'press' }); await speak(ctl); await ctl.handle({ kind: 'press' }); await flush();
+    expect(display.text('draft')).toMatch(/Can't reach xAI/);
+  });
+  it('a rejected xAI key is reported on the transcript', async () => {
+    const { ctl, display } = setup({ stt: 401 });
+    await ctl.start();
+    await ctl.handle({ kind: 'press' }); await speak(ctl); await ctl.handle({ kind: 'press' }); await flush();
+    expect(display.text('draft')).toMatch(/xAI did not accept the key/);
+  });
+  it('mic watchdog: no audio within 3 s shows the microphone help', async () => {
     const { ctl, display } = setup();
     await ctl.start();
-    await ctl.handle({ kind: 'long' });
-    expect(ctl.screen).toBe('home'); expect(display.updates.at(-1)![1]).toContain('Pick a bot');
+    await ctl.handle({ kind: 'press' });
+    await vi.advanceTimersByTimeAsync(MIC_WATCHDOG_MS + 10);
+    expect(ctl.screen).toBe('transcript');
+    expect(display.text('draft')).toBe(MIC_OFF_TEXT);
+  });
+  it('nothing heard: no STT call', async () => {
+    const { ctl, net } = setup();
+    await ctl.start();
+    await ctl.handle({ kind: 'press' });
+    ctl.onAudio(new Uint8Array(3200));
+    await ctl.handle({ kind: 'press' }); await flush();
+    expect(ctl.draft).toBe('');
+    expect(net.calls).toHaveLength(0);
+  });
+  it('going to the background while listening cancels to the list', async () => {
+    const { ctl } = setup();
+    await ctl.start();
+    await ctl.handle({ kind: 'press' });
+    await ctl.handle({ kind: 'foregroundExit' });
+    expect(ctl.screen).toBe('home');
+  });
+});
+
+describe('no relay, no polling', () => {
+  it('makes no network call while idle on the list', async () => {
+    const { ctl, net } = setup();
+    await ctl.start();
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    expect(net.calls).toHaveLength(0);
   });
 });

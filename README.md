@@ -1,61 +1,57 @@
 # BUD — Bots Up Display
 
-**BUD (Bots Up Display)** puts your Grok Bots on Even G2 glasses (touchpads or R1 ring). See what needs you,
-read short replies, and speak a message to any bot. Approvals always stay in the Grok Bot app.
+**BUD (Bots Up Display)** lets you talk to your Grok Bots from Even G2 glasses (touchpads or R1 ring):
+pick a bot, speak a task, and BUD sends it. Replies and alerts come from Grok Bot's own phone
+notifications, which the Even app mirrors to the glasses. Approvals always stay in the Grok Bot app.
+
+BUD 1.0 has no server of its own. The app runs in the Even app's WebView on the phone and calls:
+- **xAI speech to text** (`https://api.x.ai/v1/stt`) with the user's own xAI API key;
+- **the picked bot's Grok Bot webhook** (`https://api2.cursor.sh/automations/webhook/<id>`) with that bot's sender key.
 
 ```
-app/      Even Hub plugin (SDK 0.0.14, Vite, TypeScript). Runs in the Even app WebView.
-relay/    Cloudflare Worker + one SQLite Durable Object (Hono). The only server the app talks to.
-bin/glass CLI bots use to post replies and needs-you items (token from env or file, never printed).
-scripts/  dev helpers, fake Grok Bot webhook receiver, pack + bundle URL/secret check, simulator drivers.
+app/      Even Hub plugin (SDK 0.0.14, Vite, TypeScript). Glasses UI + phone setup page.
+scripts/  pack + bundle URL/secret check, simulator drivers.
 store/    simulator screenshots for the listing (icon is drawn in the Even portal's editor).
-docs/     setup (with gates), store listing, privacy draft, submission checklist, simulator findings.
+docs/     setup, store listing, privacy draft, submission checklist, simulator findings.
 ```
 
-## Defaults (all changeable)
+## Flow on the glasses
+Bot list (swipe to move) → press or long press a bot to listen → release or press to stop →
+transcript (press send, double cancel, long press redo) → "Sent to <bot>" for 1.5 s → back to the list.
+A failed send shows a short reason; press retries.
 
+## Phone page (BUD in the Even app)
+Add, edit, delete and reorder bots (name, webhook URL, sender key), "Send test" per bot, and one xAI API key.
+Everything is stored in the Even app's local storage on that phone. Keys are never logged and are shown only
+as "saved, ends abcd" after saving.
+
+## Defaults
 | Setting | Default | Where |
 |---|---|---|
-| App name | BUD (tagline "Bots Up Display") | app/app.json `name` / `tagline` (≤20 chars, no "Even") |
-| Package id | tech.cmdlab.bud | app/app.json `package_id` (permanent once uploaded) |
-| Version | 1.0.0 | app/app.json `version` |
-| Pilot bots | EDITH, Shuri | relay/src/roster.json `needs_feed`; webhook secrets decide which bots appear |
-| Roster | 16 fleet bots | relay/src/roster.json (only bots with a configured webhook are shown) |
-| Relay host | `bud-relay.<subdomain>.workers.dev` (Worker `bud-relay`) | relay/wrangler.jsonc `name`; `GLASS_RELAY_URL` at pack time |
-| Transcription | xAI speech-to-text, called by the relay (key stays server-side) | relay `XAI_API_KEY` secret |
-| Reply wait | 3 min, then "still working, full reply in Grok Bot" | relay `REPLY_TIMEOUT_MS`, app/src/config.ts |
-| Poll | every 15 s while open, paused in background, refresh on resume | app/src/config.ts |
-| Retention | 7 days for messages, replies, needs items | relay/src/db.ts |
+| App name | BUD (tagline "Bots Up Display") | app/app.json |
+| Package id | tech.cmdlab.bud | app/app.json (permanent once uploaded) |
+| Network whitelist | `https://api.x.ai`, `https://api2.cursor.sh` | app/app.json, app/src/config.ts |
+| Transcription | xAI `grok-voice-transcribe-2.0` | app/src/config.ts |
+| Sent screen | 1.5 s | app/src/config.ts |
 
 ## Develop
-
 ```
 npm install
-node scripts/make-dev-vars.mjs          # local-only random tokens in relay/.dev.vars (gitignored)
-npm run dev:relay                        # wrangler dev on :8788
-node scripts/fake-grokbot.mjs            # fake bot webhooks on :9911 (replies after 1.5 s)
-VITE_MIC_STUB=1 npm run dev:app          # app on :5174
-# simulator, no network at all (in-browser fake relay, dev builds only):
-scripts/sim-start.sh "fake=1&reset=1&devpair=12345678"   # modes: many, nobots, noneeds, offlinepair, flaky
+VITE_MIC_STUB=1 npm run dev:app                 # app on :5174
+scripts/sim-start.sh "fake=1"                   # simulator with faked xAI + webhooks (dev builds only)
+                                                # also fake=sendfail, fake=sttfail
 npm test && npm run typecheck
 ```
 
 ## Build the package
-
 ```
-GLASS_RELAY_URL=https://bud-relay.<subdomain>.workers.dev npm run pack
+npm run pack
 ```
-Builds into `../builds/`, writes the relay origin into both the bundle and `network.whitelist`,
-then runs `scripts/check-ehpk-urls.mjs`. That check fails the build on any URL literal outside
-the whitelist, on secrets (xAI keys, device tokens, bearer literals, private keys, relay token names),
-and on dev-only code (fake relay, dev pairing hook, localhost). Without `GLASS_RELAY_URL` you get a
-`-candidate-placeholder` build that is not submittable.
+Builds into `../builds/` and runs `scripts/check-ehpk-urls.mjs`, which fails the build on any URL literal
+outside the whitelist, on secrets (xAI keys, bearer literals, private keys, a baked-in webhook URL) and on
+dev-only code (fake network, localhost).
 
-## Security model (short)
-
-- Nothing secret ships in the `.ehpk`. The device gets a token at pairing; only its SHA-256 is stored.
-- Webhook URLs and sender keys exist only as Worker secrets. The app never sees them.
-- Mutating calls carry a timestamp (±60 s) and a single-use request id (10 min). Rate limits per route.
-- Errors are generic. Glasses can never approve anything: needs-you actions are hold, snooze 1h, ask at desk.
-
-See docs/setup.md for the steps and approvals needed before first use.
+## Known blocker (Oct 10, 2026)
+The Grok Bot webhook host does not allow cross-origin requests from the Even WebView (its CORS preflight
+only allows `https://cursor.com`), and Even's WebView enforces CORS. Until that changes, sends from the
+glasses fail with "Couldn't reach Grok Bot". See docs/setup.md.
