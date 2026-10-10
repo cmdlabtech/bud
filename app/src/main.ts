@@ -1,5 +1,5 @@
 import { AudioInputSource, EvenAppBridge, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
-import { MIC_STUB, SENT_SCREEN_MS } from './config';
+import { FORWARDER_URL, MIC_STUB, SENT_SCREEN_MS } from './config';
 import { Controller } from './controller';
 import { toGesture } from './gestures';
 import { NetError, sendToBot, webhookBody, type Fetch } from './net';
@@ -31,10 +31,12 @@ async function main() {
     set: async (k, v) => { await bridge.setLocalStorage(k, v); },
   };
   let f: Fetch = (...a) => fetch(...a);
-  // DEV ONLY (stripped from builds): `?fake=1` fakes xAI and the webhooks, no network at all.
+  let forwarder = FORWARDER_URL;
+  // DEV ONLY (stripped from builds): `?fake=1` fakes xAI and the forwarder, no network at all.
   if (import.meta.env.DEV && new URLSearchParams(location.search).get('fake')) {
     const { createFakeNet, seedFakeSettings } = await import('./dev/fake-net');
     f = createFakeNet(new URLSearchParams(location.search).get('fake')!) as Fetch;
+    if (new URLSearchParams(location.search).get('fake') !== 'sttonly' || !forwarder) forwarder = 'fake:forwarder';
     await seedFakeSettings(kv);
   }
 
@@ -46,6 +48,7 @@ async function main() {
     loadSettings: () => loadSettings(kv),
     exit: () => { void bridge.shutDownPageContainer(1); },
     sentMs: SENT_SCREEN_MS,
+    forwarder,
     micStub: MIC_STUB,
     log: (...a) => console.log(...a),
   });
@@ -90,7 +93,7 @@ async function main() {
   async function testBot(b: BotConfig) {
     say('listMsg', `Sending a test to ${b.name}...`);
     try {
-      await sendToBot(f, b, webhookBody('test', 'BUD test'));
+      await sendToBot(f, b, webhookBody('test', 'BUD test'), forwarder);
       say('listMsg', `Test sent. ${b.name} should reply "BUD test received" in Grok Bot.`, 'ok');
     } catch (e) {
       say('listMsg', `${b.name}: ${sendErrorText(e instanceof NetError ? e.kind : 'server')}`, 'err');
@@ -120,7 +123,7 @@ async function main() {
     const existing = settings.bots.find(x => x.id === editing);
     const key = typedKey || existing?.key || '';
     if (!name) return say('editMsg', 'Give the bot a name.', 'err');
-    if (!validWebhookUrl(url)) return say('editMsg', 'That is not a Grok Bot webhook URL (https://api2.cursor.sh/automations/webhook/...).', 'err');
+    if (!validWebhookUrl(url)) return say('editMsg', 'That is not a Grok Bot webhook URL. It should look like api2.cursor.sh/automations/webhook/... (https).', 'err');
     if (!validKey(key)) return say('editMsg', 'Paste the sender key from the routine panel.', 'err');
     if (!existing && settings.bots.length >= 30) return say('editMsg', 'BUD holds up to 30 bots.', 'err');
     const bot: BotConfig = { id: existing?.id ?? newId(), name, url, key };

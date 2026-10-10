@@ -1,0 +1,19 @@
+{
+  "name": "bud-forward",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "dev:test": "wrangler dev -c wrangler.dev-test.jsonc --port 8787",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check:deploy": "wrangler deploy --dry-run --outdir .dry-run"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260423.1",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7",
+    "wrangler": "^4.84.1"
+  }
+}

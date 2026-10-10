@@ -1,0 +1,17 @@
+{
+  // RETIRE bud-relay (gated; run only after bud-forward is deployed and phone-tested).
+  // Durable Object delete migration (legacy migrations array, which bud-relay already uses):
+  //   remove the binding + class from code, then add a migration with deleted_classes.
+  //   https://developers.cloudflare.com/durable-objects/reference/durable-object-class-migrations-legacy/#delete-migration
+  // Deletes every GlassStore object and its data. Wrangler refuses a rollback past this deploy.
+  "name": "bud-relay",
+  "main": "index.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "logpush": false,
+  "observability": { "enabled": false },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["GlassStore"] },
+    { "tag": "v2", "deleted_classes": ["GlassStore"] }
+  ]
+}

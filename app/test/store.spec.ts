@@ -12,6 +12,8 @@ describe('settings store (phone-local)', () => {
     expect(validWebhookUrl(HOOK + '?k=1')).toBe(false);
     expect(validWebhookUrl('https://api2.cursor.sh/other/abc123')).toBe(false);
     expect(validWebhookUrl('not a url')).toBe(false);
+    expect(validWebhookUrl('https://api2.cursor.sh.evil.com/automations/webhook/abc123')).toBe(false);
+    expect(validWebhookUrl('https://api2.cursor.sh/automations/webhook/abc123#x')).toBe(false);
   });
   it('round-trips bots and the xAI key, dropping invalid entries', async () => {
     const kv = new MemKV();

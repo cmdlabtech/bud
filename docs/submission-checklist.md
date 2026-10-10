@@ -7,8 +7,8 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 - ✅ package_id `tech.cmdlab.bud` (valid format). ⏳ availability: `evenhub pack ... -c` contacts Even (run at gate time)
 - ✅ edition 202601 · name "BUD" 3 chars, no "Even" · version 1.0.0 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
 - ✅ entrypoint index.html exists in the build folder (pack succeeded)
-- ✅ permissions are objects with name+desc; network whitelist is `https://api.x.ai` and `https://api2.cursor.sh` (exact origins, no wildcards)
-- ✅ every permission is used: network (xAI STT + webhook POST), g2-microphone (`audioControl(true, AudioInputSource.Glasses)`)
+- ✅ permissions are objects with name+desc; network whitelist is `https://api.x.ai` and `https://bud-forward.admin2655.workers.dev` (exact origins, no wildcards; pack fails if it differs from FORWARDER_URL)
+- ✅ every permission is used: network (xAI STT + forwarder POST), g2-microphone (`audioControl(true, AudioInputSource.Glasses)`)
 - ✅ no secrets in the bundle ([packaging](https://hub.evenrealities.com/docs/ship/packaging) "Don't commit your API key"); scripts/check-ehpk-urls.mjs passes on the build and fails on a dev build (self-test)
 - ⏳ changelog/release notes text: docs/store-listing.md
 
@@ -20,12 +20,13 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 - ⏳ brand: name is BUD; confirm naming Grok Bot in the description (store-listing.md risk 1)
 
 ## Privacy
-- ⏳ publish docs/privacy.md at a public URL; it covers network + g2-microphone, phone-only key storage, and names xAI and Grok Bot
+- ⏳ publish docs/privacy.md at a public URL; it covers network + g2-microphone, phone-only key storage, and names xAI, the CMDLAB forwarder (zero retention, Cloudflare-hosted) and Grok Bot; zero-retention copy matches forwarder/wrangler.jsonc
 
 ## First run (no black screens)
 - ✅ nothing set up → on-glasses "No bots set up yet" screen pointing to the phone page; no network call at launch
 - ✅ xAI STT allows CORS (`*`)
-- ❌ Grok Bot webhook CORS: blocks the WebView origin (docs/setup.md step 0). Blocker.
+- ✅ Grok Bot webhook CORS (blocks the WebView) solved by the forwarder: `Access-Control-Allow-Origin: *` on /v1/send. Simulator WebView → local forwarder → fake webhook worked end to end (evidence/forwarder/).
+- ⏳ forwarder deployed (gate "approve deploy"; docs/setup.md step 1) and health check ok
 
 ## Locked phone (Beta build only — ❓ cannot test on the box)
 - ⏳ phone locked + Even app backgrounded → app renders, no spinner/black screen

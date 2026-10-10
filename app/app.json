@@ -5,7 +5,7 @@
   "min_sdk_version": "0.0.14",
   "name": "BUD",
   "tagline": "Bots Up Display",
-  "description": "BUD (Bots Up Display) lets you talk to your Grok Bots from your G2: pick a bot, speak a task, and it is sent. Replies arrive as Grok Bot notifications. Set up your bots' webhook URLs, sender keys and your xAI API key on the phone page; they stay on your phone. Approvals stay in the Grok Bot app.",
+  "description": "BUD (Bots Up Display) lets you talk to your Grok Bots from your G2: pick a bot, speak a task, and it is sent. Replies arrive as Grok Bot notifications. Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing. Your keys stay on your phone. Your voice goes directly to xAI with your own API key to become text. Approvals stay in the Grok Bot app.",
   "author": "cmdlabtech",
   "supported_languages": [
     "en"
@@ -13,10 +13,10 @@
   "permissions": [
     {
       "name": "network",
-      "desc": "Sends your recorded voice to xAI to turn it into text, and sends the text to the bot you picked through its Grok Bot webhook.",
+      "desc": "Sends your recorded voice directly to xAI to turn it into text. Sends the text, with the bot's webhook URL and sender key, to BUD's zero-retention forwarder, which passes it to your bot's Grok Bot webhook and stores or logs nothing.",
       "whitelist": [
         "https://api.x.ai",
-        "https://api2.cursor.sh"
+        "https://bud-forward.admin2655.workers.dev"
       ]
     },
     {

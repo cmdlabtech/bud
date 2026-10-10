@@ -12,6 +12,8 @@ class FakeDisplay implements Display {
   text(name: string) { const c = this.current?.containers.find(x => x.name === name); return c?.kind === 'text' ? c.content : ''; }
 }
 
+const FWD = 'https://bud-forward.test';
+const SEND = FWD + '/v1/send';
 const HOOK = (id: string) => `https://api2.cursor.sh/automations/webhook/${id}`;
 const SETTINGS: Settings = {
   xaiKey: 'xai-test-key-0000',
@@ -28,7 +30,11 @@ function fakeFetch(opts: { stt?: number; hook?: number; offline?: boolean } = {}
     const url = String(input); calls.push({ url, init });
     if (opts.offline) throw new TypeError('Failed to fetch');
     if (url === 'https://api.x.ai/v1/stt') return new Response(JSON.stringify({ text: ' Check the deploy status ' }), { status: opts.stt ?? 200 });
-    return new Response('{}', { status: opts.hook ?? 200 });
+    // The forwarder answers {ok, upstream_status}; a webhook failure comes back as 502.
+    const up = opts.hook ?? 200;
+    return up === 200
+      ? new Response(JSON.stringify({ ok: true, upstream_status: 200 }), { status: 200 })
+      : new Response(JSON.stringify({ ok: false, error: 'upstream', upstream_status: up }), { status: 502 });
   });
   return { f, calls };
 }
@@ -39,7 +45,7 @@ function setup(o: { settings?: Settings; stt?: number; hook?: number; offline?: 
   const exit = vi.fn();
   const mic = { open: vi.fn(async () => true), close: vi.fn(async () => true) };
   let settings = structuredClone(o.settings ?? SETTINGS);
-  const ctl = new Controller({ display, fetch: net.f as unknown as typeof fetch, mic, loadSettings: async () => structuredClone(settings), exit, sentMs: 1500 });
+  const ctl = new Controller({ display, fetch: net.f as unknown as typeof fetch, mic, loadSettings: async () => structuredClone(settings), exit, sentMs: 1500, forwarder: FWD });
   return { ctl, display, net, exit, mic, setSettings: (s: Settings) => { settings = s; } };
 }
 const flush = async () => { for (let i = 0; i < 10; i++) await Promise.resolve(); await vi.advanceTimersByTimeAsync(0); };
@@ -131,7 +137,7 @@ describe('talk flow: press to listen, transcript, send, back to list', () => {
     await flush();
     expect(ctl.screen).toBe('transcript');
   });
-  it('press on the transcript posts the voice body to the bot webhook, shows Sent, then returns to the list', async () => {
+  it('press on the transcript sends the voice body via the forwarder (URL + key in the send only), shows Sent, then returns to the list', async () => {
     const { ctl, display, net } = setup();
     await ctl.start();
     await ctl.handle({ kind: 'press' });
@@ -140,13 +146,14 @@ describe('talk flow: press to listen, transcript, send, back to list', () => {
     await flush();
     await ctl.handle({ kind: 'press' });
     await flush();
-    const hook = net.calls.find(c => c.url.startsWith('https://api2.cursor.sh/'))!;
-    expect(hook.url).toBe(SETTINGS.bots[0].url);
+    const hook = net.calls.find(c => c.url === SEND)!;
     const h = hook.init.headers as Record<string, string>;
-    expect(h['Content-Type']).toBe('application/json');
-    expect(h.Authorization).toBe('Bearer sender-key-edith');
-    expect(h['X-Automation-Key']).toBe('sender-key-edith');
-    const body = JSON.parse(String(hook.init.body));
+    expect(h).toEqual({ 'Content-Type': 'application/json' }); // no auth headers to the forwarder itself
+    const sent = JSON.parse(String(hook.init.body));
+    expect(Object.keys(sent).sort()).toEqual(['body', 'key', 'webhook_url']);
+    expect(sent.webhook_url).toBe(SETTINGS.bots[0].url);
+    expect(sent.key).toBe('sender-key-edith');
+    const body = sent.body;
     expect(body).toMatchObject({ source: 'bud', kind: 'voice', text: 'Check the deploy status' });
     expect(body.request_id).toMatch(/^[0-9a-f-]{36}$/);
     expect(ctl.screen).toBe('sent');
@@ -155,7 +162,7 @@ describe('talk flow: press to listen, transcript, send, back to list', () => {
     expect(ctl.screen).toBe('sent');
     await vi.advanceTimersByTimeAsync(2);
     expect(ctl.screen).toBe('home');
-    expect(net.calls.filter(c => c.url.startsWith('https://api2.cursor.sh/'))).toHaveLength(1); // one try, no polling
+    expect(net.calls.filter(c => c.url === SEND)).toHaveLength(1); // one try, no polling
   });
   it('double on the transcript cancels to the list; long press redoes', async () => {
     const { ctl } = setup();
@@ -174,7 +181,7 @@ describe('talk flow: press to listen, transcript, send, back to list', () => {
     expect(ctl.screen).toBe('sendError');
     expect(display.text('state')).toMatch(/Not sent to EDITH/);
     await ctl.handle({ kind: 'press' }); await flush();
-    expect(net.calls.filter(c => c.url.startsWith('https://api2.cursor.sh/'))).toHaveLength(2);
+    expect(net.calls.filter(c => c.url === SEND)).toHaveLength(2);
     await ctl.handle({ kind: 'double' });
     expect(ctl.screen).toBe('home');
   });

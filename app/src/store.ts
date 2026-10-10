@@ -1,20 +1,17 @@
-// Device-local settings (Even app local storage on the phone). Keys never leave the phone
-// except to their own service (xAI key -> api.x.ai, sender key -> that bot's webhook).
-import { MAX_BOTS, WEBHOOK_ORIGIN, WEBHOOK_PATH } from './config';
+// Device-local settings (Even app local storage on the phone). Keys are saved only here.
+// The xAI key goes only to api.x.ai; a bot's webhook URL and sender key travel only inside
+// each send, through the zero-retention forwarder, to that bot's webhook.
+import { MAX_BOTS } from './config';
 import type { BotConfig, Settings } from './types';
 
 export interface KV { get(k: string): Promise<string>; set(k: string, v: string): Promise<void> }
 export const SETTINGS_KEY = 'bud.settings.v1';
 export const EMPTY: Settings = { bots: [], xaiKey: '' };
 
-// A Grok Bot webhook URL looks like https://api2.cursor.sh/automations/webhook/<id>, no query string.
-export function validWebhookUrl(raw: string): boolean {
-  let u: URL;
-  try { u = new URL(raw.trim()); } catch { return false; }
-  if (u.origin !== WEBHOOK_ORIGIN || u.search || u.hash || u.username || u.password) return false;
-  if (!u.pathname.startsWith(WEBHOOK_PATH)) return false;
-  return /^[A-Za-z0-9_-]{6,128}$/.test(u.pathname.slice(WEBHOOK_PATH.length));
-}
+// A Grok Bot webhook URL: api2.cursor.sh/automations/webhook/<id> over https, nothing else.
+// Same rule as the forwarder (forwarder/src/forward.ts WEBHOOK_RE), with a length bound.
+const WEBHOOK_RE = /^https:\/\/api2\.cursor\.sh\/automations\/webhook\/[A-Za-z0-9_-]{6,128}$/;
+export function validWebhookUrl(raw: string): boolean { return WEBHOOK_RE.test(raw.trim()); }
 
 export function validKey(k: string): boolean { return k.trim().length >= 8 && !/\s/.test(k.trim()); }
 

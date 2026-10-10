@@ -1,9 +1,11 @@
-// Direct calls from the phone WebView: xAI speech to text, and the bot's Grok Bot webhook.
-// No relay. Nothing here logs a key, a header, or a request body.
-import { SEND_TIMEOUT_MS, STT_MODEL, STT_TIMEOUT_MS, STT_URL } from './config';
+// Network calls from the phone WebView:
+//  - speech to text: directly to xAI with the user's key (audio never touches the forwarder);
+//  - send: to the zero-retention BUD forwarder, which passes it to the bot's Grok Bot webhook.
+// Nothing here logs a key, a header, or a request body.
+import { FORWARDER_SEND_PATH, FORWARDER_URL, MAX_TEXT_CHARS, SEND_TIMEOUT_MS, STT_MODEL, STT_TIMEOUT_MS, STT_URL } from './config';
 import type { BotConfig } from './types';
 
-export type NetKind = 'network' | 'auth' | 'rate' | 'bad' | 'server' | 'nokey';
+export type NetKind = 'network' | 'auth' | 'rate' | 'bad' | 'server' | 'nokey' | 'toolong' | 'config' | 'timeout';
 export class NetError extends Error { constructor(public kind: NetKind, public status = 0) { super(kind); } }
 
 export type Fetch = typeof fetch;
@@ -43,18 +45,31 @@ export function webhookBody(kind: BodyKind, text: string, requestId = uuid(), no
   return { source: 'bud', kind, request_id: requestId, text, ts: now };
 }
 
-// POST to the bot's webhook with its sender key, as the make-bot-ui skill specifies:
-// Content-Type JSON, Authorization: Bearer <key>, X-Automation-Key: <key>, 8 s timeout, one try.
-// 200 means the routine woke.
-export async function sendToBot(f: Fetch, bot: BotConfig, body: ReturnType<typeof webhookBody>): Promise<void> {
+// Send through the forwarder: POST <FORWARDER_URL>/v1/send {webhook_url, key, body}.
+// The forwarder re-sends body to webhook_url with the make-bot-ui headers (Authorization:
+// Bearer <key> + X-Automation-Key: <key>, 8 s timeout, one try) and answers only
+// {ok, upstream_status, error}; it never returns the webhook's body. 200 + ok means the routine woke.
+export async function sendToBot(f: Fetch, bot: BotConfig, body: ReturnType<typeof webhookBody>, forwarder = FORWARDER_URL): Promise<void> {
+  if (!forwarder) throw new NetError('config');
+  if (body.text.length > MAX_TEXT_CHARS) throw new NetError('toolong');
   let res: Response;
   try {
-    res = await f(bot.url, {
+    res = await f(forwarder + FORWARDER_SEND_PATH, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${bot.key}`, 'X-Automation-Key': bot.key },
-      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ webhook_url: bot.url, key: bot.key, body }),
       signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
     });
   } catch { throw new NetError('network'); }
-  if (res.status !== 200) throw new NetError(kindFor(res.status), res.status);
+  let out: { ok?: boolean; error?: string; upstream_status?: number } = {};
+  try { out = await res.json(); } catch { /* status alone decides */ }
+  if (res.status === 200 && out.ok === true) return;
+  if (res.status === 502 && out.error === 'upstream' && typeof out.upstream_status === 'number') {
+    throw new NetError(kindFor(out.upstream_status), out.upstream_status);
+  }
+  if (res.status === 504) throw new NetError('timeout', 504);
+  if (res.status === 429) throw new NetError('rate', 429);
+  if (res.status === 413 && out.error === 'text_too_long') throw new NetError('toolong', 413);
+  if (res.status >= 400 && res.status < 500) throw new NetError('bad', res.status);
+  throw new NetError('server', res.status);
 }

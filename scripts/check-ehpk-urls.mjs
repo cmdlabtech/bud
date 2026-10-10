@@ -24,6 +24,8 @@ const LEAKS = [
   ['Cloudflare API token var', /CLOUDFLARE_API_TOKEN|CF_API_TOKEN/],
   ['old relay token var', /ADMIN_TOKEN|BOT_WRITE_TOKEN|WEBHOOK_KEY_/],
   ['baked-in webhook URL', /api2\.cursor\.sh\/automations\/webhook\/[A-Za-z0-9_-]/],
+  ['direct webhook origin literal (sends must go through the forwarder)', /https:\/\/api2\.cursor\.sh/],
+  ['forwarder dev upstream', /DEV_UPSTREAM/],
   ['dev fake network', /createFakeNet|seedFakeSettings|dev-fake-|devfake/],
   ['localhost URL', /https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/],
   ['placeholder', /REPLACE-ME/],

@@ -20,6 +20,7 @@ export interface Deps {
   loadSettings: () => Promise<Settings>;
   exit: () => void;
   sentMs: number;
+  forwarder?: string;   // defaults to the FORWARDER_URL build setting
   micStub?: boolean;
   log?: (...a: unknown[]) => void;
 }
@@ -36,7 +37,10 @@ export function sendErrorText(kind: string): string {
   if (kind === 'auth') return 'The sender key was not accepted. Check this bot on the phone page.';
   if (kind === 'bad') return 'The webhook did not accept it. Check the URL on the phone page.';
   if (kind === 'rate') return 'Too many sends. Wait a minute and retry.';
-  if (kind === 'network') return "Couldn't reach Grok Bot. Check the phone's connection.";
+  if (kind === 'network') return "Couldn't send. Check the phone's connection.";
+  if (kind === 'timeout') return 'Grok Bot did not answer in time. Retry.';
+  if (kind === 'toolong') return 'That message is too long. Cancel and say it shorter.';
+  if (kind === 'config') return 'This BUD build has no forwarder set.';
   return 'Grok Bot had a problem. Try again in a moment.';
 }
 
@@ -166,7 +170,7 @@ export class Controller {
     this.sending = true;
     await this.go('sent');
     try {
-      await sendToBot(this.d.fetch, bot, webhookBody('voice', text));
+      await sendToBot(this.d.fetch, bot, webhookBody('voice', text), this.d.forwarder);
       this.sending = false;
       await this.go('sent');
       this.backTimer = setTimeout(() => { this.backTimer = null; if (this.screen === 'sent') { this.draft = null; void this.goHome(); } }, this.d.sentMs);
