@@ -34,7 +34,7 @@ Evidence:
 - Cloudflare still carries the traffic as the host and keeps its own platform metrics (request counts, status
   codes, CPU time) under its policy. The copy says so and doesn't claim more.
 
-## 1. Deploy the forwarder — GATE "approve deploy"
+## 1. Deploy the forwarder — DONE Oct 10, 2026, 11:44 AM ET (version f5604034-b049-4ea2-99d0-0d386431e4ec)
 Recommended name: **bud-forward**, a new Worker. It gets a clean config (no Durable Object migration
 history), its own URL, and the old relay stays untouched until it is retired, so rollback is trivial.
 ```

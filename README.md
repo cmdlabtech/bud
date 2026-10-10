@@ -76,4 +76,8 @@ literals, private keys, a baked-in webhook URL), on a direct webhook origin, and
 localhost, DEV_UPSTREAM).
 
 ## Deploy status
-Not deployed. Deploying bud-forward and retiring bud-relay are gated; the plan and rollback are in docs/setup.md.
+- bud-forward deployed Oct 10, 2026, 11:44 AM ET: https://bud-forward.admin2655.workers.dev, version
+  f5604034-b049-4ea2-99d0-0d386431e4ec. Live checks: health ok; preflight 204 with ACAO `*`; a non-cursor URL
+  gets 400 `bad_webhook_url`; Workers Logs shows 0 events for bud-forward.
+- bud-relay is still deployed (relay code, GlassStore DO, ADMIN_TOKEN/BOT_WRITE_TOKEN). Retiring it is a separate
+  gate (docs/setup.md step 2).
