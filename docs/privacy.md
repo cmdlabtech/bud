@@ -90,4 +90,4 @@ BUD is not directed at children under 13 and does not knowingly collect their in
 If this policy changes, the new version is posted at this address with a new effective date.
 
 ## Contact
-Questions or removal requests: cameron@cmdlab.tech
+Questions or removal requests: contact@cmdlab.tech

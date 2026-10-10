@@ -109,6 +109,12 @@ Checks after deploy: open `/feedback` in a phone browser and send one test (dry 
 that CMDLAB closes); in the Even app, More → Send feedback shows the Turnstile frame and a Send button.
 Then rebuild the .ehpk (`npm run pack`, FEEDBACK_URL default already points at bud-feedback).
 
+Legal pages: `/privacy` and `/terms` are generated from docs/privacy.md and docs/terms.md
+(`node scripts/build-legal.mjs`; `--check` fails if stale). Public contact: contact@cmdlab.tech.
+Deployed Oct 10, 2026 3:25 PM ET as version 72e45c28-6018-4de9-8e1a-0dc183d624ce (rollback:
+`npx wrangler rollback 3ff2f39f-3932-4fa7-981d-2e7d7364527f`, the version without legal pages). Checks: /privacy and
+/terms 200 with the contact; /feedback page byte-identical; /api/feedback OPTIONS 204, GET 405, empty POST 400.
+
 Kill switch: set `FEEDBACK_ENABLED` to anything but "true" and redeploy (the form then shows
 "Feedback couldn't be sent"). Logs: Workers Logs/traces/Logpush are off in `wrangler.jsonc`; rejects only
 `console.warn` a reason code, never text or IPs.

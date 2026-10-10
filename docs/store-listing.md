@@ -19,8 +19,9 @@ are exact so they can be checked against the form.
 | Permission: g2-microphone | in app.json | 128 | desc 1–300 |
 | Category | Productivity | – | values not documented; pick in the form |
 | Search tags | assistant, voice, bots, productivity | – | not documented |
-| Privacy policy URL | https://bud-feedback.admin2655.workers.dev/privacy | – | needs deploy (gate) |
-| Terms URL | https://bud-feedback.admin2655.workers.dev/terms | – | needs deploy (gate) |
+| Privacy policy URL | https://bud-feedback.admin2655.workers.dev/privacy | – | live (bud-feedback 72e45c28) |
+| Terms URL | https://bud-feedback.admin2655.workers.dev/terms | – | live (bud-feedback 72e45c28) |
+| Contact email (privacy/terms) | contact@cmdlab.tech | – | public contact on /privacy and /terms |
 | Version / package | 1.0.3 / tech.cmdlab.bud | – | semver, reverse-domain ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
 
 ### Description (773 characters)

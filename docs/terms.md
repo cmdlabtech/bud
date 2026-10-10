@@ -37,4 +37,4 @@ If these terms change, the new version is posted at this address with a new effe
 See the BUD Privacy Policy: https://bud-feedback.admin2655.workers.dev/privacy
 
 ## Contact
-cameron@cmdlab.tech
+contact@cmdlab.tech

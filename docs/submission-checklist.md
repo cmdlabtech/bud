@@ -16,7 +16,7 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 | Screenshots from the simulator | PASS | store/screenshots/1-5 (576x288) |
 | Display name = app.json = glasses | PASS | "BUD" |
 | No impersonation / logos / keyword stuffing | PASS | Grok Bot named nominatively; "Not affiliated with xAI." |
-| Privacy covers every permission; backend domains traceable | PASS (draft) | /privacy not live until bud-feedback deploy; contact is a placeholder |
+| Privacy covers every permission; backend domains traceable | PASS | /privacy and /terms live on bud-feedback; public contact contact@cmdlab.tech |
 | First run: on-glasses message, setup remembered, CORS | PASS | "Open BUD on your phone to finish setup"; localStorage; forwarder CORS |
 | Reviewer can run the core flow | FAIL | needs a Grok Bot hub + xAI key: demo mode recommended (docs/review-notes.md) |
 | New user can set up from the store copy | PASS | 1.0.3: public BUD hub bot template linked in the listing, phone page and glasses step |
@@ -44,7 +44,7 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 - ⏳ brand: name is BUD; confirm naming Grok Bot in the description (store-listing.md risk 1)
 
 ## Privacy
-- ⏳ publish docs/privacy.md at a public URL; it covers network + g2-microphone, phone-only key storage, and names xAI, the CMDLAB forwarder (zero retention, Cloudflare-hosted) and Grok Bot; zero-retention copy matches forwarder/wrangler.jsonc
+- ✅ docs/privacy.md and docs/terms.md live at https://bud-feedback.admin2655.workers.dev/privacy and /terms (contact@cmdlab.tech); it covers network + g2-microphone, phone-only key storage, and names xAI, the CMDLAB forwarder (zero retention, Cloudflare-hosted) and Grok Bot; zero-retention copy matches forwarder/wrangler.jsonc
 
 - ⏳ privacy draft also covers feedback (the one thing kept: private GitHub issue, hashed anti-spam counters ≤1 day), Turnstile and the PayPal link; zero-retention copy is scoped to the forwarder
 - ✅ bud-feedback deployed Oct 10, 2026 (docs/setup.md step 2b); ⏳ one real test issue through the form (needs a human for the Turnstile checkbox)
