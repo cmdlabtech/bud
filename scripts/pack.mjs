@@ -4,8 +4,8 @@
 // FORWARDER_URL (build setting) is the zero-retention forwarder origin (forwarder/).
 // FEEDBACK_URL is the separate feedback Worker (feedback/), the one thing BUD keeps.
 // The network whitelist in app/app.json must be exactly [xAI, forwarder, feedback,
-// Turnstile, PayPal] (the last two as in Wondereye: Turnstile runs in the feedback frame, and the
-// PayPal Donate link is a URL literal Even's scanner checks); the build fails otherwise.
+// Turnstile, PayPal, xAI console] (the last two as in Wondereye: Turnstile runs in the feedback frame, and the
+// PayPal Donate and xAI console key links are URL literals Even's scanner checks); the build fails otherwise.
 // No keys are built in: the user enters them on the phone page and they stay on the phone.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, copyFileSync } from 'node:fs';
@@ -21,6 +21,7 @@ const DEFAULT_FORWARDER = 'https://bud-forward.admin2655.workers.dev'; // deploy
 const DEFAULT_FEEDBACK = 'https://bud-feedback.admin2655.workers.dev'; // planned name, see docs/setup.md
 const TURNSTILE = 'https://challenges.cloudflare.com';
 const PAYPAL = 'https://www.paypal.com';
+const XAI_CONSOLE = 'https://console.x.ai'; // "Get an xAI API key" link-out (literal, like PayPal)
 function bareOrigin(name, value) {
   const v = value.replace(/\/+$/, '');
   try { const u = new URL(v); if (u.protocol === 'https:' && u.origin === v) return u.origin; } catch { /* invalid */ }
@@ -30,7 +31,7 @@ function bareOrigin(name, value) {
 const fwdOrigin = bareOrigin('FORWARDER_URL', process.env.FORWARDER_URL || DEFAULT_FORWARDER);
 const fbOrigin = bareOrigin('FEEDBACK_URL', process.env.FEEDBACK_URL || DEFAULT_FEEDBACK);
 const wl = ((manifest.permissions || []).find(p => p.name === 'network')?.whitelist || []).map(u => new URL(u).origin).sort();
-const want = ['https://api.x.ai', fwdOrigin, fbOrigin, TURNSTILE, PAYPAL].sort();
+const want = ['https://api.x.ai', fwdOrigin, fbOrigin, TURNSTILE, PAYPAL, XAI_CONSOLE].sort();
 if (JSON.stringify(wl) !== JSON.stringify(want)) {
   console.error(`app.json network whitelist must be exactly ${JSON.stringify(want)}; it is ${JSON.stringify(wl)}`);
   process.exit(1);

@@ -22,6 +22,7 @@
   .msg { min-height: 1.3em; font-size: 14px; margin: 6px 0 0; } .ok { color: #3ddc84; } .err { color: #ff8a80; }
   p.meta { color: #6f8a7b; font-size: 13px; }
   .hidden { display: none; }
+  a.ext-link { color: #3ddc84; text-decoration: underline; -webkit-tap-highlight-color: transparent; }
   /* Header with Donate pill (same style as Wondereye's .donate-btn) */
   .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .donate-btn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: #FFDD00; border-radius: 999px; text-decoration: none; color: #000; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
@@ -68,6 +69,7 @@
   <div class="card">
     <h2>Speech to text</h2>
     <p>Your xAI API key turns your voice into text. It is stored only on this phone, and your voice goes straight from this phone to xAI.</p>
+    <p class="meta"><a class="ext-link" id="xaiKeyLink" href="https://console.x.ai/team/default/api-keys" target="_blank" rel="noopener noreferrer" data-external>Get an xAI API key</a> &middot; Paste it below; it stays on this phone.</p>
     <p class="meta" id="xaiState"></p>
     <label for="xaiKey">xAI API key</label>
     <input id="xaiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste to set or replace" />
@@ -86,7 +88,7 @@
   <div class="card hidden" id="editCard">
     <h2 id="editTitle">Add a bot</h2>
     <label for="botName">Name on the glasses</label>
-    <input id="botName" maxlength="24" autocomplete="off" placeholder="EDITH" />
+    <input id="botName" maxlength="24" autocomplete="off" placeholder="Research bot" />
     <label for="botUrl">Webhook URL (from the bot's Glass inbox routine)</label>
     <input id="botUrl" type="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the webhook URL from Grok Bot" />
     <label for="botKey">Sender key</label>

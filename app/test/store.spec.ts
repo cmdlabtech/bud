@@ -18,13 +18,13 @@ describe('settings store (phone-local)', () => {
   it('round-trips bots and the xAI key, dropping invalid entries', async () => {
     const kv = new MemKV();
     await saveSettings(kv, { xaiKey: 'xai-key-123456', bots: [
-      { id: 'a', name: '  EDITH ', url: HOOK, key: 'sender-key-1' },
+      { id: 'a', name: '  Research bot ', url: HOOK, key: 'sender-key-1' },
       { id: 'b', name: 'Bad', url: 'https://example.com/x', key: 'sender-key-2' },
       { id: 'c', name: 'NoKey', url: HOOK, key: 'x' },
     ] });
     const s = await loadSettings(kv);
     expect(s.xaiKey).toBe('xai-key-123456');
-    expect(s.bots.map(b => b.name)).toEqual(['EDITH']);
+    expect(s.bots.map(b => b.name)).toEqual(['Research bot']);
     expect(kv.m.has(SETTINGS_KEY)).toBe(true);
   });
   it('survives corrupt storage', async () => {

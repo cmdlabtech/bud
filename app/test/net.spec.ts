@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { NetError, sendToBot, transcribe, webhookBody } from '../src/net';
 
-const bot = { id: 'b1', name: 'EDITH', url: 'https://api2.cursor.sh/automations/webhook/abc123', key: 'sender-key-abc' };
+const bot = { id: 'b1', name: 'Research bot', url: 'https://api2.cursor.sh/automations/webhook/abc123', key: 'sender-key-abc' };
 const FWD = 'https://bud-forward.test';
 const fwd = (status: number, out: unknown) => vi.fn(async (_u?: any, _i?: any) => new Response(JSON.stringify(out), { status }));
 

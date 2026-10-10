@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { DONATE_URL } from '../src/config';
+import { DONATE_URL, XAI_KEYS_URL } from '../src/config';
 import { buildPayload, fallbackUrl, isFatalVerifyCode, isVerifyMessage, looksSecret, verifyFrameUrl, verifyOrigin, MSG_MAX, TITLE_MAX } from '../src/feedback';
 
 const BASE = 'https://bud-feedback.admin2655.workers.dev';
@@ -63,9 +63,14 @@ describe('phone page', () => {
     expect(DONATE_URL).toBe('https://www.paypal.com/donate/?hosted_button_id=Z5SDZULELYGNS');
     expect(html).toMatch(/class="donate-btn"[^>]*href="https:\/\/www\.paypal\.com\/donate\/\?hosted_button_id=Z5SDZULELYGNS" target="_blank" rel="noopener noreferrer" data-external/);
   });
+  it('has the "Get an xAI API key" link (xAI console API Keys page) opened like Donate, with the stays-on-phone hint', () => {
+    expect(XAI_KEYS_URL).toBe('https://console.x.ai/team/default/api-keys');
+    expect(html).toMatch(/href="https:\/\/console\.x\.ai\/team\/default\/api-keys" target="_blank" rel="noopener noreferrer" data-external>Get an xAI API key<\/a>/);
+    expect(html).toContain('it stays on this phone.');
+  });
   it('whitelist covers every origin, and zero-retention copy stays scoped to the forwarder', () => {
     const wl = manifest.permissions.find((p: any) => p.name === 'network').whitelist;
-    expect(wl).toEqual(['https://api.x.ai', 'https://bud-forward.admin2655.workers.dev', 'https://bud-feedback.admin2655.workers.dev', 'https://challenges.cloudflare.com', 'https://www.paypal.com']);
+    expect(wl).toEqual(['https://api.x.ai', 'https://bud-forward.admin2655.workers.dev', 'https://bud-feedback.admin2655.workers.dev', 'https://challenges.cloudflare.com', 'https://www.paypal.com', 'https://console.x.ai']);
     expect(manifest.description).toContain("Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing.");
     expect(manifest.description).toContain('The only thing BUD keeps is feedback');
   });

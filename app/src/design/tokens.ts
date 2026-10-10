@@ -1,4 +1,4 @@
-// Riri's layout tokens (design/render_sheet.py, Oct 10 2026). Change here to restyle.
+// Layout tokens (design/render_sheet.py, Oct 10 2026). Change here to restyle.
 // textColor: 4 focus, 3 secondary, 2 metadata, 1 gesture hints. 0 is never used.
 export const W = 576;
 export const H = 288;

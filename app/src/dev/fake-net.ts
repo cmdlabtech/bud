@@ -40,6 +40,6 @@ export async function seedFakeSettings(kv: KV) {
   const hook = (id: string) => `https://api2.cursor.sh/automations/webhook/devfake${id}`;
   await kv.set(SETTINGS_KEY, JSON.stringify({
     xaiKey: 'dev-fake-key-not-real',
-    bots: ['EDITH', 'Shuri', 'Pepper', 'Forge', 'Riri', 'Scout', 'Wong', 'Friday', 'Vision', 'Gambit'].map((name, i) => ({ id: `d${i}`, name, url: hook(String(i).padStart(4, '0')), key: 'dev-fake-sender-key' })),
+    bots: ['Research bot', 'Inbox bot', 'Calendar bot', 'Travel bot', 'Writing bot', 'Finance bot', 'Home bot', 'Code bot', 'News bot', 'Shopping bot'].map((name, i) => ({ id: `d${i}`, name, url: hook(String(i).padStart(4, '0')), key: 'dev-fake-sender-key' })),
   }));
 }

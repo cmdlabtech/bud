@@ -2,10 +2,12 @@
 // Build-time bundle check (after Wondereye 1.7.2's scripts/check-ehpk-urls.mjs):
 //  1. every http(s) URL literal in the built folder must be on app.json's network whitelist
 //     (Even Hub's review scanner flags stray literals);
-//  2. no secrets or dev-only code may ship (Even: "Never bundle secrets or API keys into the .ehpk").
+//  2. no secrets or dev-only code may ship (Even: "Never bundle secrets or API keys into the .ehpk");
+//  3. no personal bot names (scripts/private-names.mjs) may ship.
 // Usage: node scripts/check-ehpk-urls.mjs <app.json> <build dir>. Exit 1 on any problem.
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, extname, relative } from 'node:path';
+import { findNames } from './private-names.mjs';
 
 const [manifestPath, dir] = process.argv.slice(2);
 if (!manifestPath || !dir) { console.error('usage: check-ehpk-urls.mjs <app.json> <build dir>'); process.exit(2); }
@@ -50,6 +52,7 @@ for (const f of files) {
   for (const [label, re] of LEAKS) {
     if (re.test(text)) { bad++; console.log(`LEAK  ${label}  (${rel})`); }
   }
+  for (const n of findNames(text)) { bad++; console.log(`NAME  personal bot name (hash ${n})  (${rel})`); }
 }
 for (const [url, file] of [...found].sort()) {
   if (IGNORE.some(r => r.test(url))) { console.log(`ignored (not a network call)  ${url}  (${file})`); continue; }
@@ -61,5 +64,5 @@ for (const [url, file] of [...found].sort()) {
 }
 for (const o of allowed) if (![...found.keys()].some(u => u.startsWith(o))) console.log(`note: whitelist entry with no literal in bundle: ${o}`);
 if (!net?.whitelist?.length) { console.log('network permission has no whitelist'); bad++; }
-if (bad) { console.error(`\n${bad} problem(s): stray URL literals or leaked secrets/dev code`); process.exit(1); }
-console.log(`\nOK: ${files.length} files, ${found.size} URL literal(s), all whitelisted; no secrets or dev code`);
+if (bad) { console.error(`\n${bad} problem(s): stray URL literals, leaked secrets/dev code, or personal bot names`); process.exit(1); }
+console.log(`\nOK: ${files.length} files, ${found.size} URL literal(s), all whitelisted; no secrets, dev code or personal bot names`);

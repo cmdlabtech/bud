@@ -10,6 +10,8 @@ export const FORWARDER_SEND_PATH = '/v1/send';
 // BUD feedback Worker (feedback/). Feedback is the one thing BUD keeps (a private GitHub issue);
 // it is a separate Worker from the forwarder. Build setting: FEEDBACK_URL (VITE_FEEDBACK_URL).
 export const FEEDBACK_URL: string = (import.meta.env.VITE_FEEDBACK_URL ?? '').replace(/\/+$/, '');
+// xAI console API Keys page, as linked from xAI's quickstart (docs.x.ai/developers/quickstart). Link only.
+export const XAI_KEYS_URL = 'https://console.x.ai/team/default/api-keys';
 export const DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=Z5SDZULELYGNS'; // link only, opened outside BUD
 export const APP_VERSION: string = __APP_VERSION__;
 export const MAX_TEXT_CHARS = 1000;                           // forwarder rejects longer text

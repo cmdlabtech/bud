@@ -7,7 +7,7 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 - ✅ package_id `tech.cmdlab.bud` (valid format). ⏳ availability: `evenhub pack ... -c` contacts Even (run at gate time)
 - ✅ edition 202601 · name "BUD" 3 chars, no "Even" · version 1.0.0 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
 - ✅ entrypoint index.html exists in the build folder (pack succeeded)
-- ✅ permissions are objects with name+desc (network desc 275/300 chars); network whitelist is `https://api.x.ai`, `https://bud-forward.admin2655.workers.dev`, `https://bud-feedback.admin2655.workers.dev`, `https://challenges.cloudflare.com`, `https://www.paypal.com` (exact origins, no wildcards; pack fails if it differs from FORWARDER_URL/FEEDBACK_URL + Turnstile + PayPal, as in Wondereye)
+- ✅ permissions are objects with name+desc (network desc 275/300 chars); network whitelist is `https://api.x.ai`, `https://bud-forward.admin2655.workers.dev`, `https://bud-feedback.admin2655.workers.dev`, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai` (exact origins, no wildcards; pack fails if it differs from FORWARDER_URL/FEEDBACK_URL + Turnstile + PayPal + xAI console; the last two are link-out literals, whitelisted as in Wondereye)
 - ✅ every permission is used: network (xAI STT + forwarder POST + feedback POST/verify frame + Donate link literal), g2-microphone (`audioControl(true, AudioInputSource.Glasses)`)
 - ✅ no secrets in the bundle ([packaging](https://hub.evenrealities.com/docs/ship/packaging) "Don't commit your API key"); scripts/check-ehpk-urls.mjs passes on the build and fails on a dev build (self-test)
 - ⏳ changelog/release notes text: docs/store-listing.md
@@ -15,7 +15,8 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 ## Store listing & assets
 - ⏳ icon: draw in the Developer Portal's 24x24 pixel editor (Even's tool; 1-bit, 2x2 blocks) ([design guidelines](https://hub.evenrealities.com/docs/build/design-guidelines))
 - ❓ background image: required non-empty, monochrome; spec not in docs → check portal
-- ⏳ screenshots: recapture for the 1.0 scope (store/screenshots shows relay-era screens)
+- ✅ screenshots: recaptured for the 1.0 scope with generic bot names (store/screenshots/1-4)
+- ✅ no personal bot names in the bundle (release check) or the repo (`npm test` runs scripts/check-names.mjs)
 - ✅ display name = app.json name
 - ⏳ brand: name is BUD; confirm naming Grok Bot in the description (store-listing.md risk 1)
 

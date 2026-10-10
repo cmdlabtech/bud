@@ -1,4 +1,4 @@
-// Pure screen builders: app state -> SDK-style page spec (Riri's layout, BUD 1.0 send-only scope).
+// Pure screen builders: app state -> SDK-style page spec (design layout, BUD 1.0 send-only scope).
 // No SDK calls here so every screen can be unit tested against the Even limits.
 import { BRIGHT, BORDER, FOOT_H, FOOT_Y, HDR_H, HOME_LIST_W, W } from './design/tokens';
 import { G, levelMeter, mmss, pad, trunc } from './text';

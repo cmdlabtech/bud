@@ -45,6 +45,9 @@ Everything is stored in the Even app's local storage on that phone. Keys are nev
 as "saved, ends abcd" after saving. Webhook URLs and sender keys leave the phone only inside each send, to the
 forwarder. The page shows the zero-retention note next to the key fields.
 
+- **Get an xAI API key** (Speech to text card): link to xAI's console API Keys page
+  (https://console.x.ai/team/default/api-keys, as linked from xAI's quickstart), opened like Donate, with the hint
+  that the key stays on the phone.
 - **Donate** (header): yellow pill to https://www.paypal.com/donate/?hosted_button_id=Z5SDZULELYGNS, opened like
   Wondereye's links (`a[data-external]` → `window.open(url, '_blank', 'noopener,noreferrer')`, falling back to the
   native `target="_blank"`). Link only; BUD fetches nothing from PayPal.
@@ -60,7 +63,7 @@ forwarder. The page shows the zero-retention note next to the key fields.
 |---|---|---|
 | App name | BUD (tagline "Bots Up Display") | app/app.json |
 | Package id | tech.cmdlab.bud | app/app.json (permanent once uploaded) |
-| Network whitelist | `https://api.x.ai`, forwarder, feedback, `https://challenges.cloudflare.com`, `https://www.paypal.com` | app/app.json (pack checks it equals these five) |
+| Network whitelist | `https://api.x.ai`, forwarder, feedback, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai` | app/app.json (pack checks it equals these six) |
 | Feedback | `FEEDBACK_URL`, default `https://bud-feedback.admin2655.workers.dev` | scripts/pack.mjs → VITE_FEEDBACK_URL |
 | Feedback limits | 3/hour and 10/day per hashed IP, 50/day total, 24 h duplicate drop, title 80, message 2,000 | feedback/src/feedback.ts |
 | Forwarder | `FORWARDER_URL`, default `https://bud-forward.admin2655.workers.dev` | scripts/pack.mjs → VITE_FORWARDER_URL |
@@ -96,10 +99,11 @@ VITE_FEEDBACK_URL=http://127.0.0.1:8787 npm run dev:app
 FORWARDER_URL=https://bud-forward.admin2655.workers.dev FEEDBACK_URL=https://bud-feedback.admin2655.workers.dev npm run pack
 ```
 Builds into `../builds/`. Fails unless the app.json whitelist is exactly xAI, the forwarder, the feedback origin,
-Turnstile and PayPal, then runs
+Turnstile, PayPal and the xAI console, then runs
 `scripts/check-ehpk-urls.mjs`, which fails on any URL literal outside the whitelist, on secrets (xAI keys, bearer
 literals, private keys, a baked-in webhook URL), on a direct webhook origin, and on dev-only code (fake network,
-localhost, DEV_UPSTREAM).
+localhost, DEV_UPSTREAM), and on any of CMDLAB's personal bot names (scripts/private-names.mjs). `npm test` also
+runs `scripts/check-names.mjs` over every tracked file.
 
 ## Deploy status
 - bud-forward deployed Oct 10, 2026, 11:44 AM ET: https://bud-forward.admin2655.workers.dev, version

@@ -75,7 +75,7 @@ async function main() {
     $('xaiState').textContent = `Key: ${mask(settings.xaiKey)}`;
     const box = $('bots');
     box.replaceChildren();
-    if (!settings.bots.length) box.append(el('p', {}, 'No bots yet. Add EDITH or Shuri first.'));
+    if (!settings.bots.length) box.append(el('p', {}, 'No bots yet. Add your first bot below.'));
     settings.bots.forEach((b, i) => {
       const row = el('div', { className: 'bot' });
       row.append(el('div', { className: 'name' }, b.name));
