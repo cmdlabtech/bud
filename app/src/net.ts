@@ -40,16 +40,22 @@ export async function transcribe(f: Fetch, xaiKey: string, wav: Uint8Array): Pro
 }
 
 // Body the "Glass inbox" routine reads (docs/setup.md). request_id lets the bot ignore duplicates.
-export type BodyKind = 'voice' | 'test';
-export function webhookBody(kind: BodyKind, text: string, requestId = uuid(), now = Date.now()) {
-  return { source: 'bud', kind, request_id: requestId, text, ts: now };
+// Hub mode adds an optional `target` (a display name from the bot list code) and kind "sync"
+// (ask the hub for a fresh bot list code). Direct bots never get a target.
+export type BodyKind = 'voice' | 'test' | 'sync';
+export interface WebhookBody { source: 'bud'; kind: BodyKind; request_id: string; text: string; ts: number; target?: string }
+export function webhookBody(kind: BodyKind, text: string, requestId = uuid(), now = Date.now(), target?: string): WebhookBody {
+  const b: WebhookBody = { source: 'bud', kind, request_id: requestId, text, ts: now };
+  if (target) b.target = target;
+  return b;
 }
+export const SYNC_TEXT = 'Send my BUD bot list code.';
 
 // Send through the forwarder: POST <FORWARDER_URL>/v1/send {webhook_url, key, body}.
 // The forwarder re-sends body to webhook_url with the make-bot-ui headers (Authorization:
 // Bearer <key> + X-Automation-Key: <key>, 8 s timeout, one try) and answers only
 // {ok, upstream_status, error}; it never returns the webhook's body. 200 + ok means the routine woke.
-export async function sendToBot(f: Fetch, bot: BotConfig, body: ReturnType<typeof webhookBody>, forwarder = FORWARDER_URL): Promise<void> {
+export async function sendToBot(f: Fetch, bot: Pick<BotConfig, 'url' | 'key'>, body: WebhookBody, forwarder = FORWARDER_URL): Promise<void> {
   if (!forwarder) throw new NetError('config');
   if (body.text.length > MAX_TEXT_CHARS) throw new NetError('toolong');
   let res: Response;

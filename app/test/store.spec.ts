@@ -29,7 +29,7 @@ describe('settings store (phone-local)', () => {
   });
   it('survives corrupt storage', async () => {
     const kv = new MemKV(); kv.m.set(SETTINGS_KEY, '{nope');
-    expect(await loadSettings(kv)).toEqual({ bots: [], xaiKey: '' });
+    expect(await loadSettings(kv)).toEqual({ bots: [], xaiKey: '', hub: null, hubBots: [] });
   });
   it('masks keys: never the whole value', () => {
     const k = 'super-secret-sender-key-9f3a';

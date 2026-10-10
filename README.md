@@ -1,7 +1,8 @@
 # BUD — Bots Up Display
 
 **BUD (Bots Up Display)** lets you talk to your Grok Bots from Even G2 glasses (touchpads or R1 ring):
-pick a bot, speak a task, and BUD sends it. Replies and alerts come from Grok Bot's own phone
+pick a bot, speak a task, and BUD sends it. **Hub mode (1.0.2):** connect one hub bot and every teammate shows up
+on the glasses by name; the hub hands each task to the named bot (docs/hub-inbox.md). Replies and alerts come from Grok Bot's own phone
 notifications, which the Even app mirrors to the glasses. Approvals always stay in the Grok Bot app.
 
 **Zero retention:** BUD's forwarder passes your request straight to your bot and stores or logs nothing.
@@ -20,8 +21,9 @@ The app runs in the Even app's WebView on the phone and calls:
   request with the make-bot-ui headers. It returns only the status code. It is needed because Grok Bot webhooks
   don't answer the WebView's CORS preflight.
 
-What passes through the forwarder, in transit only: the confirmed text (≤1,000 chars), request id, timestamp,
-the webhook URL and sender key. Nothing is stored: there are no storage bindings, no `console` calls, and Workers
+What passes through the forwarder, in transit only: the confirmed text (≤1,000 chars), kind (voice/test/sync),
+request id, timestamp, in hub mode the target bot's display name (`target`, ≤24 chars), and the webhook URL and
+sender key. Nothing is stored: there are no storage bindings, no `console` calls, and Workers
 Logs, traces and Logpush are off (`forwarder/wrangler.jsonc`, enforced by tests). Rate limiting counts SHA-256
 hashes in 60 s windows. Cloudflare carries the traffic as the host. Details: docs/privacy.md, docs/setup.md.
 
@@ -40,7 +42,22 @@ transcript (press send, double cancel, long press redo) → "Sent to <bot>" for 
 A failed send shows a short reason; press retries.
 
 ## Phone page (BUD in the Even app)
-Add, edit, delete and reorder bots (name, webhook URL, sender key), "Send test" per bot, and one xAI API key.
+First run shows **Setup 1/2: Speech key → Setup 2/2: Connect your hub bot → Setup done**; the glasses say
+"Open BUD on your phone to finish setup" with the missing steps until then.
+- **Speech to text:** **Paste key** reads the clipboard and saves the xAI key (pasting into the field saves too).
+- **Connect your hub bot:** **Copy** the message "Set up BUD for my glasses" for the hub bot, then one
+  **Paste setup** box takes the hub's webhook URL, sender key and BUD1 bot list code in any order, in one paste or
+  several (`app/src/setup.ts` tells them apart by pattern). A **Paste** button reads the clipboard when the WebView
+  allows it, else long-press → Paste. A checklist shows Webhook URL / Sender key / Connection test / Bot list. When
+  URL + key are in, BUD saves the hub and sends a test right away (kind `sync` if no names yet, which makes the hub
+  reply with the code). The box is emptied after every paste. Resync, Send test, Clear names, Remove hub and
+  **Enter by hand** stay available.
+- **BUD1 bot list code** (`app/src/botcode.ts`): `BUD1.<base64url {"v":1,"bots":[...]}>.<first 6 hex of SHA-256 of
+  the payload>`, names only (1–18, each ≤24 printable chars, no duplicates); anything URL- or key-like is refused.
+  Example: `BUD1.eyJ2IjoxLCJib3RzIjpbIlJlc2VhcmNoIGJvdCIsIkluYm94IGJvdCIsIkNhbGVuZGFyIGJvdCJdfQ.05f001`
+  (Research bot, Inbox bot, Calendar bot).
+- **Direct bots (advanced, optional):** add, edit, delete and reorder bots (name, webhook URL, sender key), "Send
+  test" per bot. They come after the hub's names on the glasses and send without `target`.
 Everything is stored in the Even app's local storage on that phone. Keys are never logged and are shown only
 as "saved, ends abcd" after saving. Webhook URLs and sender keys leave the phone only inside each send, to the
 forwarder. The page shows the zero-retention note next to the key fields.

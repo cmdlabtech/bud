@@ -1,13 +1,13 @@
-# Even Hub submission checklist — BUD (Bots Up Display) 1.0.0
+# Even Hub submission checklist — BUD (Bots Up Display) 1.0.2 (hub mode)
 
 Source for every item: https://hub.evenrealities.com/docs/ship/app-submission (updated 2026-08-07) unless noted.
 Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not verifiable here
 
 ## Manifest
 - ✅ package_id `tech.cmdlab.bud` (valid format). ⏳ availability: `evenhub pack ... -c` contacts Even (run at gate time)
-- ✅ edition 202601 · name "BUD" 3 chars, no "Even" · version 1.0.0 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
+- ✅ edition 202601 · name "BUD" 3 chars, no "Even" · version 1.0.2 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
 - ✅ entrypoint index.html exists in the build folder (pack succeeded)
-- ✅ permissions are objects with name+desc (network desc 275/300 chars); network whitelist is `https://api.x.ai`, `https://bud-forward.admin2655.workers.dev`, `https://bud-feedback.admin2655.workers.dev`, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai` (exact origins, no wildcards; pack fails if it differs from FORWARDER_URL/FEEDBACK_URL + Turnstile + PayPal + xAI console; the last two are link-out literals, whitelisted as in Wondereye)
+- ✅ permissions are objects with name+desc (network desc 285/300 chars); network whitelist is `https://api.x.ai`, `https://bud-forward.admin2655.workers.dev`, `https://bud-feedback.admin2655.workers.dev`, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai` (exact origins, no wildcards; pack fails if it differs from FORWARDER_URL/FEEDBACK_URL + Turnstile + PayPal + xAI console; the last two are link-out literals, whitelisted as in Wondereye)
 - ✅ every permission is used: network (xAI STT + forwarder POST + feedback POST/verify frame + Donate link literal), g2-microphone (`audioControl(true, AudioInputSource.Glasses)`)
 - ✅ no secrets in the bundle ([packaging](https://hub.evenrealities.com/docs/ship/packaging) "Don't commit your API key"); scripts/check-ehpk-urls.mjs passes on the build and fails on a dev build (self-test)
 - ⏳ changelog/release notes text: docs/store-listing.md
@@ -27,7 +27,10 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 - ✅ bud-feedback deployed Oct 10, 2026 (docs/setup.md step 2b); ⏳ one real test issue through the form (needs a human for the Turnstile checkbox)
 
 ## First run (no black screens)
-- ✅ nothing set up → on-glasses "No bots set up yet" screen pointing to the phone page; no network call at launch
+- ✅ nothing set up → on-glasses "Open BUD on your phone to finish setup" with the missing steps (xAI key, hub); no network call at launch
+- ✅ phone page first run: progress 1/2 → 2/2 → done; one Paste-setup box (URL, key, BUD1 code in any order), auto test after the hub is saved (tests/setup.spec.ts, evidence/hub/)
+- ⏳ bud-forward update (target + sync) deployed before the 1.0.2 build ships (docs/setup.md step 1b)
+- ⏳ reviewers need a hub: provide a test hub bot (routine + BUD1 code) or a note
 - ✅ xAI STT allows CORS (`*`)
 - ✅ Grok Bot webhook CORS (blocks the WebView) solved by the forwarder: `Access-Control-Allow-Origin: *` on /v1/send. Simulator WebView → local forwarder → fake webhook worked end to end (evidence/forwarder/).
 - ⏳ forwarder deployed (gate "approve deploy"; docs/setup.md step 1) and health check ok

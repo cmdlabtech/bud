@@ -71,7 +71,8 @@ describe('home: bot list', () => {
     const { ctl, display, setSettings } = setup({ settings: { bots: [], xaiKey: '' } });
     await ctl.start();
     expect(ctl.screen).toBe('setup');
-    expect(display.text('state')).toMatch(/No bots set up/);
+    expect(display.text('state')).toMatch(/Open BUD on your phone to finish setup/);
+    expect(display.text('why')).toBe('1. Add your xAI key (speech to text)\n2. Connect your hub bot (paste setup)');
     setSettings(SETTINGS);
     await ctl.handle({ kind: 'press' });
     expect(ctl.screen).toBe('home');
@@ -91,12 +92,14 @@ describe('home: bot list', () => {
     await ctl.handle({ kind: 'double' });
     expect(exit).toHaveBeenCalled();
   });
-  it('without an xAI key, picking a bot shows the key-missing setup page', async () => {
+  it('without an xAI key, the glasses show the one remaining step instead of the list', async () => {
     const { ctl, display } = setup({ settings: { ...SETTINGS, xaiKey: '' } });
     await ctl.start();
+    expect(ctl.screen).toBe('setup');
+    expect(display.text('why')).toBe('1. Add your xAI key (speech to text)');
     await ctl.handle({ kind: 'press' });
     expect(ctl.screen).toBe('setup');
-    expect(display.text('state')).toMatch(/Speech key missing/);
+    expect(display.text('saved')).toMatch(/Not done yet/);
   });
   it('reload picks up phone-page changes while on the list', async () => {
     const { ctl, display, setSettings } = setup();

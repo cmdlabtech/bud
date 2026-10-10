@@ -28,6 +28,8 @@ export function createFakeNet(mode: string) {
     }
     if (mode === 'sttonly' && url.endsWith('/v1/send')) return fetch(input, _init);
     if (url.endsWith('/v1/send')) {
+      // Log only the forwarded body (never the webhook URL or key) so the simulator pass can check target.
+      try { const body = JSON.parse(String(_init?.body ?? '{}')).body; (globalThis as any).__budLastSend = body; console.log('[bud-dev] forwarded body', JSON.stringify(body)); } catch { /* ignore */ }
       if (mode === 'sendfail') return new Response(JSON.stringify({ ok: false, error: 'upstream', upstream_status: 500 }), { status: 502 });
       return new Response(JSON.stringify({ ok: true, upstream_status: 200 }), { status: 200 });
     }
@@ -35,7 +37,14 @@ export function createFakeNet(mode: string) {
   };
 }
 
-export async function seedFakeSettings(kv: KV) {
+//   ?fake=hub      hub mode: a fake hub with no bot names yet and no direct bots (paste a code with &paste=BUD1...)
+//   ?fake=fresh    first run: nothing saved (paste-setup measurements)
+export async function seedFakeSettings(kv: KV, mode = '1') {
+  if (mode === 'fresh') { await kv.set(SETTINGS_KEY, ''); return; }
+  if (mode === 'hub') {
+    await kv.set(SETTINGS_KEY, JSON.stringify({ xaiKey: 'dev-fake-key-not-real', bots: [], hub: { url: 'https://api2.cursor.sh/automations/webhook/devfakehub0', key: 'dev-fake-hub-key' }, hubBots: [] }));
+    return;
+  }
   if (await kv.get(SETTINGS_KEY)) return;
   const hook = (id: string) => `https://api2.cursor.sh/automations/webhook/devfake${id}`;
   await kv.set(SETTINGS_KEY, JSON.stringify({

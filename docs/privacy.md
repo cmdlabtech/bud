@@ -15,13 +15,17 @@ Your keys stay on your phone. Your voice goes directly from your phone to xAI an
 - **Glasses microphone (g2-microphone).** Only while you hold or tap to talk. The recording goes from your
   phone **directly** to xAI's speech-to-text API (api.x.ai) with your own xAI API key. BUD does not store the
   audio, and it never passes through BUD's forwarder. You see the text and choose whether to send it.
-- **Phone storage (Even app local storage).** Your bot list (names, webhook URLs, sender keys) and your xAI
-  API key are saved only on your phone. After you save a key, the page shows only its last four characters.
+- **Phone storage (Even app local storage).** Your hub bot's webhook URL and sender key, the bot names from
+  your hub's bot list code, any direct bots (names, webhook URLs, sender keys) and your xAI API key are saved
+  only on your phone. The bot list code holds bot names only, never a link or key; BUD refuses any code that
+  looks like it contains one. Anything you paste into the setup box is used on the phone and the box is
+  emptied right away. After you save a key, the page shows only its last four characters.
 - **Network.** For BUD's main job, two destinations only:
   1. **xAI** (api.x.ai): your recording and your xAI key, for speech to text.
   2. **BUD's forwarder** (bud-forward, run by CMDLAB on Cloudflare Workers): each time you send, it receives
-     the text you confirmed (up to 1,000 characters), that bot's webhook URL, and its sender key, plus a request
-     id and a timestamp. It immediately makes one request to that Grok Bot webhook (api2.cursor.sh only), then
+     the text you confirmed (up to 1,000 characters), the webhook URL and sender key it goes to (your hub bot's,
+     or a direct bot's), and, in hub mode, the name of the bot the task is for (up to 24 characters), plus a
+     request id and a timestamp. Your hub bot then hands the task to that teammate inside Grok Bot. It immediately makes one request to that Grok Bot webhook (api2.cursor.sh only), then
      answers your phone with only "sent" or "not sent" and a status code.
 
   Only if you use them: **Send feedback** contacts BUD's feedback service (bud-feedback, also on Cloudflare
@@ -67,7 +71,7 @@ network security. The forwarder adds no logging or storage on top of that.
 - **xAI** receives your recordings for transcription, under your own xAI account. See xAI's privacy terms.
 - **Grok Bot** (the webhook service) receives the text you confirm, so your bot can work on it and reply in your
   Grok Bot chat. See Grok Bot's privacy terms.
-- **CMDLAB** keeps nothing from your tasks: the forwarder passes the text, webhook URL and key through while they
+- **CMDLAB** keeps nothing from your tasks: the forwarder passes the text, bot name, webhook URL and key through while they
   are in transit only. CMDLAB does keep feedback you choose to send (see above).
 - **GitHub** stores feedback issues in CMDLAB's private repository; **Cloudflare** runs the Turnstile check for
   feedback.
@@ -75,7 +79,7 @@ BUD has no ads, no analytics, and no account, and no data is sold or shared with
 Donations go through PayPal's own site under PayPal's terms; BUD never sees payment details.
 
 ## Your choices
-Delete a bot or remove your xAI key on the BUD phone page at any time. Uninstalling BUD removes its local storage
+Remove the hub, clear the bot names, delete a direct bot or remove your xAI key on the BUD phone page at any time. Uninstalling BUD removes its local storage
 from the Even app.
 
 Contact: (CMDLAB contact email)

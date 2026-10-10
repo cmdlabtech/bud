@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { handle, MAX_TEXT_CHARS, upstreamTarget, type Env } from '../src/forward';
+import { handle, MAX_TARGET_CHARS, MAX_TEXT_CHARS, upstreamTarget, type Env } from '../src/forward';
 
 const HOOK = 'https://api2.cursor.sh/automations/webhook/AbC_123-xyz';
 const KEY = 'sender-key-SECRET-9f8e7d';
@@ -103,6 +103,27 @@ describe('POST /v1/send', () => {
       expect(JSON.parse(out)).toEqual({ ok: false, error });
       expect(out).not.toMatch(/SECRET|api2|webhook\//);
       expect(f).not.toHaveBeenCalled();
+    }
+  });
+
+  it('hub mode: passes an optional target name (<=24 printable chars) and kind sync; drops other extras', async () => {
+    const f = upstreamOk();
+    const res = await handle(post(payload({ body: body({ target: '  Research bot ', extra: 'x' }) })), env(), f as any);
+    expect(res.status).toBe(200);
+    expect(JSON.parse(f.mock.calls[0][1].body)).toEqual({ source: 'bud', kind: 'voice', request_id: 'rid-1', text: TEXT, ts: 1, target: 'Research bot' });
+    const g = upstreamOk();
+    expect((await handle(post(payload({ body: body({ kind: 'sync', text: 'Send my BUD bot list code.' }) })), env(), g as any)).status).toBe(200);
+    expect(JSON.parse(g.mock.calls[0][1].body).kind).toBe('sync');
+    const h = upstreamOk();
+    await handle(post(payload()), env(), h as any);
+    expect('target' in JSON.parse(h.mock.calls[0][1].body)).toBe(false);   // direct bots: no target
+    expect(MAX_TARGET_CHARS).toBe(24);
+    for (const target of ['x'.repeat(25), 'two\nlines', 'tab\there', 7, ['a'], '']) {
+      const k = upstreamOk();
+      const r = await handle(post(payload({ body: body({ target }) })), env(), k as any);
+      expect(r.status, JSON.stringify(target)).toBe(400);
+      expect(await r.json()).toEqual({ ok: false, error: 'bad_target' });
+      expect(k).not.toHaveBeenCalled();
     }
   });
 

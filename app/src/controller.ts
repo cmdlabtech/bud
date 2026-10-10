@@ -5,7 +5,9 @@ import type { Display } from './render';
 import {
   MENU, homeListText, homePage, levelText, listeningPage, posText, recText, sendErrorPage, sentPage, setupPage, transcriptPage,
 } from './screens';
-import type { BotConfig, Settings } from './types';
+import { routes } from './store';
+import { remainingSteps } from './setup';
+import type { Route, Settings } from './types';
 import { Recorder, syntheticChunk, type MicControl, type StopReason } from './voice';
 
 export type Screen = 'setup' | 'home' | 'listening' | 'transcript' | 'sent' | 'sendError';
@@ -67,8 +69,9 @@ export class Controller {
   }
 
   private log(...a: unknown[]) { this.d.log?.('[bud]', ...a); }
-  get bots(): BotConfig[] { return this.settings.bots; }
-  bot(id = this.botId): BotConfig | undefined { return this.bots.find(b => b.id === id); }
+  // Glasses list: hub-routed names, then direct bots (store.routes).
+  get bots(): Route[] { return routes(this.settings); }
+  bot(id = this.botId): Route | undefined { return this.bots.find(b => b.id === id); }
   private botName(id = this.botId): string { return this.bot(id)?.name ?? 'bot'; }
 
   // ---------------------------------------------------------------- startup / settings
@@ -81,9 +84,14 @@ export class Controller {
     if (this.screen === 'home' || this.screen === 'setup') await this.goHome();
   }
 
+  /** Setup steps still missing (glasses first run): speech key, then a hub or a direct bot. */
+  get missingSteps(): string[] {
+    return remainingSteps({ xaiKey: !!this.settings.xaiKey, hub: !!this.settings.hub, bots: this.settings.bots.length });
+  }
+
   async goHome(message?: string): Promise<void> {
     this.clearBackTimer();
-    if (this.bots.length === 0) return this.go('setup', message);
+    if (this.bots.length === 0 || this.missingSteps.length) return this.go('setup', message);
     return this.go('home');
   }
 
@@ -93,7 +101,7 @@ export class Controller {
     const name = this.botName();
     const page = (() => {
       switch (screen) {
-        case 'setup': return setupPage({ reason: this.bots.length ? 'nokey' : 'nobots', message });
+        case 'setup': return setupPage({ steps: this.missingSteps, message });
         case 'home': return homePage({ names: this.bots.map(b => b.name), selected: this.homeSel, showPos: this.showPos });
         case 'listening': return listeningPage({ botName: name, elapsedMs: this.recorder.elapsedMs, levels: this.recorder.levels, holdMode: this.holdMode });
         case 'transcript': return transcriptPage({ botName: name, text: this.draft, error: this.draftError });
@@ -170,7 +178,7 @@ export class Controller {
     this.sending = true;
     await this.go('sent');
     try {
-      await sendToBot(this.d.fetch, bot, webhookBody('voice', text), this.d.forwarder);
+      await sendToBot(this.d.fetch, bot, webhookBody('voice', text, undefined, undefined, bot.target), this.d.forwarder);
       this.sending = false;
       await this.go('sent');
       this.backTimer = setTimeout(() => { this.backTimer = null; if (this.screen === 'sent') { this.draft = null; void this.goHome(); } }, this.d.sentMs);
@@ -213,7 +221,7 @@ export class Controller {
     switch (this.screen) {
       case 'setup':
         if (g.kind === 'double') return this.d.exit();
-        if (g.kind === 'press') { await this.reload(); if (this.screen === 'setup') await this.go('setup', 'Still nothing set up. Add a bot on your phone.'); }
+        if (g.kind === 'press') { await this.reload(); if (this.screen === 'setup') await this.go('setup', 'Not done yet. Finish the steps on your phone.'); }
         return;
       case 'home': return this.homeInput(g);
       case 'listening':

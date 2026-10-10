@@ -22,6 +22,18 @@
   .msg { min-height: 1.3em; font-size: 14px; margin: 6px 0 0; } .ok { color: #3ddc84; } .err { color: #ff8a80; }
   p.meta { color: #6f8a7b; font-size: 13px; }
   .hidden { display: none; }
+  textarea.code { width: 100%; box-sizing: border-box; font: 14px ui-monospace, monospace; padding: 10px; border-radius: 10px; border: 1px solid #2f4a3c; background: #0b0d0c; color: #e8f5ec; resize: vertical; word-break: break-all; }
+  .progress { margin-top: 14px; padding: 12px 14px; border-radius: 12px; background: #16261d; border: 1px solid #2f6b47; color: #cfeedd; font-weight: 600; }
+  .progress.done { background: #12301f; border-color: #3ddc84; color: #3ddc84; }
+  .card.current { border-color: #3ddc84; } .card.later { opacity: 0.55; }
+  .stepno { display: inline-block; min-width: 22px; height: 22px; line-height: 22px; text-align: center; border-radius: 11px; background: #22302a; color: #9fb5a8; font-size: 13px; margin-right: 6px; }
+  .card.current .stepno { background: #3ddc84; color: #04120a; }
+  button.small { font-size: 13px; padding: 4px 10px; }
+  ul.checklist { list-style: none; padding: 0; margin: 12px 0 0; } ul.checklist li { padding: 4px 0; color: #9fb5a8; }
+  ul.checklist li::before { content: "○ "; } ul.checklist li.done { color: #3ddc84; } ul.checklist li.done::before { content: "✓ "; }
+  ul.checklist li.busy::before { content: "… "; } ul.checklist li.error { color: #ff8a80; } ul.checklist li.error::before { content: "✗ "; }
+  details.manual { margin-top: 12px; color: #9fb5a8; } details.manual summary { font-size: 14px; }
+  ul.names { margin: 8px 0 0; padding-left: 20px; color: #e8f5ec; } ul.names li { margin: 2px 0; }
   a.ext-link { color: #3ddc84; text-decoration: underline; -webkit-tap-highlight-color: transparent; }
   /* Header with Donate pill (same style as Wondereye's .donate-btn) */
   .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
@@ -65,28 +77,55 @@
   </header>
   <p class="sub">Bots Up Display</p>
   <p>Pick a bot on your G2, speak a task, and BUD sends it. Replies come as Grok Bot notifications. Approvals stay in the Grok Bot app.</p>
+  <div class="progress" id="progress" role="status"></div>
 
-  <div class="card">
-    <h2>Speech to text</h2>
+  <div class="card" id="xaiCard">
+    <h2><span class="stepno">1</span> Speech to text</h2>
     <p>Your xAI API key turns your voice into text. It is stored only on this phone, and your voice goes straight from this phone to xAI.</p>
     <p class="meta"><a class="ext-link" id="xaiKeyLink" href="https://console.x.ai/team/default/api-keys" target="_blank" rel="noopener noreferrer" data-external>Get an xAI API key</a> &middot; Paste it below; it stays on this phone.</p>
     <p class="meta" id="xaiState"></p>
     <label for="xaiKey">xAI API key</label>
     <input id="xaiKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste to set or replace" />
-    <div class="row" style="margin-top:10px"><button id="xaiSave">Save key</button><button class="danger" id="xaiClear">Remove key</button></div>
+    <div class="row" style="margin-top:10px"><button id="xaiPaste">Paste key</button><button class="ghost" id="xaiSave">Save typed key</button><button class="danger" id="xaiClear">Remove key</button></div>
     <p class="msg" id="xaiMsg" role="status"></p>
   </div>
 
+  <div class="card" id="hubCard">
+    <h2><span class="stepno">2</span> Connect your hub bot</h2>
+    <p>One bot (your "hub") brings your whole bot list. In Grok Bot, send your hub bot: <strong>Set up BUD for my glasses</strong> <button class="ghost small" id="copyAsk">Copy</button></p>
+    <p>Then paste here, in any order: the <strong>webhook URL</strong> and <strong>sender key</strong> from the routine panel, and the <strong>BUD1 code</strong> from the chat. One paste or several.</p>
+    <textarea id="setupBox" class="code" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste here"></textarea>
+    <div class="row" style="margin-top:10px"><button id="setupPaste">Paste</button><button class="ghost" id="setupClear">Clear box</button></div>
+    <ul class="checklist" id="checklist">
+      <li id="ckUrl">Webhook URL</li>
+      <li id="ckKey">Sender key</li>
+      <li id="ckTest">Connection test</li>
+      <li id="ckNames">Bot list (optional; the glasses show "Hub" without it)</li>
+    </ul>
+    <p class="msg" id="hubMsg" role="status"></p>
+    <p class="meta" id="hubState"></p>
+    <ul class="names" id="hubNames"></ul>
+    <div class="row"><button class="ghost hidden" id="hubSync">Resync bot list</button><button class="ghost hidden" id="hubTest">Send test</button><button class="danger hidden" id="hubNamesClear">Clear names</button><button class="danger hidden" id="hubClear">Remove hub</button></div>
+    <details class="manual"><summary>Enter by hand</summary>
+      <label for="hubUrl">Hub webhook URL</label>
+      <input id="hubUrl" type="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the webhook URL from the routine panel" />
+      <label for="hubKey">Hub sender key</label>
+      <input id="hubKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the sender key" />
+      <div class="row" style="margin-top:10px"><button id="hubSave">Save hub</button></div>
+    </details>
+    <p class="meta"><strong>Zero retention.</strong> The hub URL and sender key are saved only on this phone. Each time you send, the text, the name of the bot it's for, and the hub URL and key go to BUD's forwarder, which passes them straight to your hub bot and stores and logs none of them. Your hub bot hands the task to that teammate. The bot list code holds names only and stays on this phone.</p>
+  </div>
+
   <div class="card">
-    <h2>Bots</h2>
-    <p>Order here is the order on your glasses.</p>
+    <h2>Direct bots (advanced, optional)</h2>
+    <p>Add a bot by its own webhook if you don't use a hub, or for a bot your hub can't reach. These come after the hub's names on your glasses, in this order.</p>
     <div id="bots"></div>
     <p class="msg" id="listMsg" role="status"></p>
-    <button class="wide ghost" id="addBtn">Add a bot</button>
+    <button class="wide ghost" id="addBtn">Add a direct bot</button>
   </div>
 
   <div class="card hidden" id="editCard">
-    <h2 id="editTitle">Add a bot</h2>
+    <h2 id="editTitle">Add a direct bot</h2>
     <label for="botName">Name on the glasses</label>
     <input id="botName" maxlength="24" autocomplete="off" placeholder="Research bot" />
     <label for="botUrl">Webhook URL (from the bot's Glass inbox routine)</label>

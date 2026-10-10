@@ -1,7 +1,7 @@
 {
   "package_id": "tech.cmdlab.bud",
   "edition": "202601",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "min_sdk_version": "0.0.14",
   "name": "BUD",
   "tagline": "Bots Up Display",
@@ -13,7 +13,7 @@
   "permissions": [
     {
       "name": "network",
-      "desc": "Voice goes directly to xAI to become text. Task text, webhook URL and sender key go to BUD's zero-retention forwarder, which passes them to your bot and stores nothing. Feedback you choose to send goes to BUD's separate feedback service and is kept as a private GitHub issue.",
+      "desc": "Voice goes directly to xAI to become text. Task text, bot name, webhook URL and sender key go to BUD's zero-retention forwarder, which passes them to your bot and stores nothing. Feedback you choose to send goes to BUD's separate feedback service and is kept as a private GitHub issue.",
       "whitelist": [
         "https://api.x.ai",
         "https://bud-forward.admin2655.workers.dev",

@@ -4,7 +4,8 @@
 // glasses app (a WebView on http://127.0.0.1) cannot POST to a webhook directly.
 //
 // What it does, and nothing more:
-//   POST /v1/send  {webhook_url, key, body}  ->  POST webhook_url  (body re-built from known fields)
+//   POST /v1/send  {webhook_url, key, body}  ->  POST webhook_url  (body re-built from known fields:
+//                  source, kind voice|test|sync, request_id, text, ts, optional target name)
 //   GET  /v1/health                          ->  "ok"
 // Zero retention: no storage bindings, no cache, no console output of any kind, and Workers
 // Logs / traces / Logpush are switched off in wrangler.jsonc. The only state it touches is the
@@ -67,7 +68,11 @@ async function readCapped(req: Request, max: number): Promise<Uint8Array | null>
   return out;
 }
 
-export type ForwardBody = { source: 'bud'; kind: 'voice' | 'test'; request_id: string; text: string; ts: number };
+// target (hub mode, BUD 1.0.2): optional display name the hub bot routes to; 1-24 printable chars.
+// kind "sync": the phone page asks the hub bot for a fresh bot list code.
+export const MAX_TARGET_CHARS = 24;
+const TARGET_RE = /^[^\p{C}]{1,24}$/u;   // printable, no control/format characters, no line breaks
+export type ForwardBody = { source: 'bud'; kind: 'voice' | 'test' | 'sync'; request_id: string; text: string; ts: number; target?: string };
 export type Parsed = { webhookUrl: string; key: string; body: ForwardBody };
 
 // Validate and re-build. Unknown fields are dropped, so nothing else can ride along.
@@ -78,12 +83,20 @@ export function parseSend(raw: unknown): Parsed | string {
   if (typeof url !== 'string' || url.length > MAX_URL_CHARS || !WEBHOOK_RE.test(url)) return 'bad_webhook_url';
   if (typeof key !== 'string' || key.length > MAX_KEY_CHARS || !KEY_RE.test(key)) return 'bad_key';
   if (!b || typeof b !== 'object' || Array.isArray(b)) return 'bad_body';
-  if (b.source !== 'bud' || (b.kind !== 'voice' && b.kind !== 'test')) return 'bad_body';
+  if (b.source !== 'bud' || (b.kind !== 'voice' && b.kind !== 'test' && b.kind !== 'sync')) return 'bad_body';
   if (typeof b.request_id !== 'string' || !REQUEST_ID_RE.test(b.request_id)) return 'bad_body';
   if (typeof b.text !== 'string' || !b.text.trim()) return 'bad_body';
   if (b.text.length > MAX_TEXT_CHARS) return 'text_too_long';
   if (typeof b.ts !== 'number' || !Number.isFinite(b.ts)) return 'bad_body';
-  return { webhookUrl: url, key, body: { source: 'bud', kind: b.kind, request_id: b.request_id, text: b.text, ts: b.ts } };
+  let target: string | undefined;
+  if (b.target !== undefined) {
+    if (typeof b.target !== 'string') return 'bad_target';
+    target = b.target.trim();
+    if ([...target].length > MAX_TARGET_CHARS || !TARGET_RE.test(target)) return 'bad_target';
+  }
+  const body: ForwardBody = { source: 'bud', kind: b.kind, request_id: b.request_id, text: b.text, ts: b.ts };
+  if (target) body.target = target;
+  return { webhookUrl: url, key, body };
 }
 
 export function upstreamTarget(webhookUrl: string, env: Env): string {

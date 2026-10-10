@@ -7,7 +7,7 @@ describe('screens fit the Even limits', () => {
   const pages = [
     homePage({ names: ['Research bot', 'Inbox bot'], selected: 0, showPos: true }),
     homePage({ names, selected: 29, showPos: false }),
-    setupPage({ reason: 'nobots' }), setupPage({ reason: 'nokey', message: 'x' }),
+    setupPage({ steps: ['Add your xAI key (speech to text)', 'Connect your hub bot (paste setup)'] }), setupPage({ steps: ['Add your xAI key (speech to text)'], message: 'x' }), setupPage({ steps: [] }),
     listeningPage({ botName: 'Research bot', elapsedMs: 4200, levels: [100, 3000], holdMode: true }),
     transcriptPage({ botName: 'Research bot', text: null }), transcriptPage({ botName: 'Research bot', text: 'x'.repeat(2000) }), transcriptPage({ botName: 'Research bot', text: '', error: 'err' }),
     sentPage({ botName: 'Research bot', sending: true }), sentPage({ botName: 'Research bot', sending: false }),
@@ -24,7 +24,7 @@ describe('home list', () => {
   });
   it('BUD branding: short header, name plus tagline on setup', () => {
     expect(homePage({ names: ['Research bot'], selected: 0, showPos: true }).containers[0]).toMatchObject({ content: 'BUD' });
-    expect(JSON.stringify(setupPage({ reason: 'nobots' }))).toContain('BUD   Bots Up Display');
+    expect(JSON.stringify(setupPage({ steps: ['x'] }))).toContain('BUD   Bots Up Display');
   });
   it('no relay-era features on any screen', () => {
     const all = JSON.stringify([homePage({ names: ['Research bot'], selected: 0, showPos: true }), sentPage({ botName: 'Research bot', sending: false })]);

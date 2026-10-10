@@ -49,19 +49,17 @@ export function homePage(p: { names: string[]; selected: number; showPos: boolea
   return { key: 'home', containers, menu: MENU.home };
 }
 
-// ---- 1b Setup needed (no bots or no xAI key on this phone) -----------------------------------
-export function setupPage(p: { reason: 'nobots' | 'nokey'; message?: string }): PageSpec {
-  const state = p.reason === 'nobots' ? `${G.idle} No bots set up yet` : `${G.idle} Speech key missing`;
-  const why = p.reason === 'nobots'
-    ? 'On your phone, open BUD in the Even app and add a bot: its name, webhook URL and sender key.'
-    : 'On your phone, open BUD in the Even app and add your xAI API key. It turns your voice into text.';
+// ---- 1b Setup needed: what is still missing, finished on the phone page --------------------------
+export function setupPage(p: { steps: string[]; message?: string }): PageSpec {
+  const steps = p.steps.length ? p.steps : ['Add a bot on the phone page'];
+  const why = steps.map((t, i) => `${i + 1}. ${t}`).join('\n');
   return {
     key: 'setup',
     containers: [
       T('hdr', 0, 0, W, HDR_H, 'BUD   Bots Up Display', { color: BRIGHT.meta }),
-      T('state', 0, 44, W, 36, state, { capture: true }),
-      T('why', 0, 84, W, 82, why, { color: BRIGHT.secondary }),
-      T('saved', 0, 176, W, 58, p.message ?? 'Everything stays on your phone.', { color: BRIGHT.meta }),
+      T('state', 0, 40, W, 36, `${G.idle} Open BUD on your phone to finish setup`, { capture: true }),
+      T('why', 0, 80, W, 90, why, { color: BRIGHT.secondary }),
+      T('saved', 0, 176, W, 58, p.message ?? 'In the Even app: BUD. Keys stay on your phone.', { color: BRIGHT.meta }),
       foot('press check again    double exit'),
     ],
     menu: MENU.setup,

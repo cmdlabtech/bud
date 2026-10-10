@@ -1,12 +1,14 @@
 // Device-local settings (Even app local storage on the phone). Keys are saved only here.
 // The xAI key goes only to api.x.ai; a bot's webhook URL and sender key travel only inside
 // each send, through the zero-retention forwarder, to that bot's webhook.
+import { MAX_HUB_BOTS, checkName } from './botcode';
 import { MAX_BOTS } from './config';
-import type { BotConfig, Settings } from './types';
+import type { BotConfig, HubConfig, Route, Settings } from './types';
 
 export interface KV { get(k: string): Promise<string>; set(k: string, v: string): Promise<void> }
 export const SETTINGS_KEY = 'bud.settings.v1';
-export const EMPTY: Settings = { bots: [], xaiKey: '' };
+export const EMPTY: Settings = { bots: [], xaiKey: '', hub: null, hubBots: [] };
+export const HUB_FALLBACK_NAME = 'Hub';
 
 // A Grok Bot webhook URL: api2.cursor.sh/automations/webhook/<id> over https, nothing else.
 // Same rule as the forwarder (forwarder/src/forward.ts WEBHOOK_RE), with a length bound.
@@ -39,11 +41,37 @@ function sanitize(raw: unknown): Settings {
     if (name && validWebhookUrl(url) && validKey(key)) bots.push({ id, name, url, key });
     if (bots.length >= MAX_BOTS) break;
   }
-  return { bots, xaiKey: typeof r.xaiKey === 'string' ? r.xaiKey.trim() : '' };
+  let hub: HubConfig | null = null;
+  const h = r.hub as Partial<HubConfig> | null | undefined;
+  if (h && typeof h === 'object') {
+    const url = String(h.url ?? '').trim(), key = String(h.key ?? '').trim();
+    if (validWebhookUrl(url) && validKey(key)) hub = { url, key };
+  }
+  const hubBots: string[] = [];
+  const seen = new Set<string>();
+  for (const n of Array.isArray(r.hubBots) ? r.hubBots : []) {
+    const c = checkName(n);
+    if (!c.ok || seen.has(c.name.toLowerCase())) continue;
+    seen.add(c.name.toLowerCase()); hubBots.push(c.name);
+    if (hubBots.length >= MAX_HUB_BOTS) break;
+  }
+  return { bots, xaiKey: typeof r.xaiKey === 'string' ? r.xaiKey.trim() : '', hub, hubBots };
+}
+
+/** Glasses list: hub-routed names first (or one "Hub" entry before a code is pasted), then direct bots. */
+export function routes(s: Settings): Route[] {
+  const out: Route[] = [];
+  if (s.hub) {
+    const names = s.hubBots ?? [];
+    if (names.length) names.forEach((name, i) => out.push({ id: `hub:${i}`, name, url: s.hub!.url, key: s.hub!.key, target: name, viaHub: true }));
+    else out.push({ id: 'hub:self', name: HUB_FALLBACK_NAME, url: s.hub.url, key: s.hub.key, viaHub: true });
+  }
+  for (const b of s.bots) out.push({ ...b });
+  return out;
 }
 
 export async function loadSettings(kv: KV): Promise<Settings> {
-  try { return sanitize(JSON.parse((await kv.get(SETTINGS_KEY)) || 'null')); } catch { return { ...EMPTY, bots: [] }; }
+  try { return sanitize(JSON.parse((await kv.get(SETTINGS_KEY)) || 'null')); } catch { return { ...EMPTY, bots: [], hubBots: [] }; }
 }
 
 export async function saveSettings(kv: KV, s: Settings): Promise<Settings> {
