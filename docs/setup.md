@@ -61,7 +61,7 @@ bud-relay still runs the relay code with a `GlassStore` Durable Object, plus the
 Alternative (not recommended): deploy the forwarder under the name bud-relay with both migrations in its config.
 That keeps the old URL but mixes DO history into a zero-retention config and makes rollback one-way.
 
-## 2b. Feedback service (bud-feedback) — GATES: CMDLAB creates the keys, then "approve deploy"
+## 2b. Feedback service (bud-feedback) — DEPLOYED Oct 10, 2026, 12:12 PM ET (version 3ff2f39f-3932-4fa7-981d-2e7d7364527f)
 Feedback is the one thing BUD keeps (a private GitHub issue). It is a separate Worker from bud-forward so the
 forwarder stays binding-free and zero-retention. Code: `feedback/`; same checks as Wondereye's /api/feedback
 (origin, JSON ≤6 KB, strict schema, honeypot, form time, ≤1 link, secret patterns, KV rate limits 3/h + 10/day per

@@ -23,7 +23,7 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 - ⏳ publish docs/privacy.md at a public URL; it covers network + g2-microphone, phone-only key storage, and names xAI, the CMDLAB forwarder (zero retention, Cloudflare-hosted) and Grok Bot; zero-retention copy matches forwarder/wrangler.jsonc
 
 - ⏳ privacy draft also covers feedback (the one thing kept: private GitHub issue, hashed anti-spam counters ≤1 day), Turnstile and the PayPal link; zero-retention copy is scoped to the forwarder
-- ⏳ bud-feedback deployed (gate "approve deploy"; docs/setup.md step 2b) before release, or the feedback form shows its error state
+- ✅ bud-feedback deployed Oct 10, 2026 (docs/setup.md step 2b); ⏳ one real test issue through the form (needs a human for the Turnstile checkbox)
 
 ## First run (no black screens)
 - ✅ nothing set up → on-glasses "No bots set up yet" screen pointing to the phone page; no network call at launch

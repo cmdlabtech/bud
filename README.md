@@ -107,5 +107,9 @@ localhost, DEV_UPSTREAM).
   gets 400 `bad_webhook_url`; Workers Logs shows 0 events for bud-forward.
 - bud-relay is still deployed (relay code, GlassStore DO, ADMIN_TOKEN/BOT_WRITE_TOKEN). Retiring it is a separate
   gate (docs/setup.md step 2).
-- bud-feedback is NOT deployed yet (branch feedback-donate). Until it is, the in-app form shows "Verification could
-  not load" and the browser fallback fails; deploy steps in docs/setup.md step 2b.
+- bud-feedback deployed Oct 10, 2026, 12:12 PM ET: https://bud-feedback.admin2655.workers.dev, version
+  3ff2f39f-3932-4fa7-981d-2e7d7364527f (dry run off). KV namespace bud-feedback (87fcef0a9d15403593d72a219d3c05d3);
+  secrets TURNSTILE_SECRET and GITHUB_FEEDBACK_TOKEN set; labels feedback, needs-triage, source:app, source:web
+  created in cmdlabtech/bud. Live checks: health ok, verify frame and /feedback served with their CSP, loopback
+  CORS only, a dummy Turnstile token is refused (403), and the Turnstile widget renders on the Worker's host.
+  Kill switch: FEEDBACK_ENABLED.
