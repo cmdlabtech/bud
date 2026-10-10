@@ -61,6 +61,44 @@ bud-relay still runs the relay code with a `GlassStore` Durable Object, plus the
 Alternative (not recommended): deploy the forwarder under the name bud-relay with both migrations in its config.
 That keeps the old URL but mixes DO history into a zero-retention config and makes rollback one-way.
 
+## 2b. Feedback service (bud-feedback) — GATES: CMDLAB creates the keys, then "approve deploy"
+Feedback is the one thing BUD keeps (a private GitHub issue). It is a separate Worker from bud-forward so the
+forwarder stays binding-free and zero-retention. Code: `feedback/`; same checks as Wondereye's /api/feedback
+(origin, JSON ≤6 KB, strict schema, honeypot, form time, ≤1 link, secret patterns, KV rate limits 3/h + 10/day per
+hashed IP and 50/day total, Turnstile siteverify + hostname, 24 h dedupe, then one GitHub issue).
+
+CMDLAB provides (in the dashboards; never paste values into chat):
+1. **Turnstile widget** (Cloudflare dashboard → Turnstile → Add widget), name "BUD feedback", hostname
+   `bud-feedback.admin2655.workers.dev` only (no 127.0.0.1/localhost: the verify frame runs on the Worker's own
+   host), mode Managed. Gives a **site key** (public, goes in `wrangler.jsonc` `TURNSTILE_SITEKEY`) and a
+   **secret key** (Worker secret `TURNSTILE_SECRET`).
+2. **GitHub token**: fine-grained PAT, resource owner cmdlabtech, **only** repository cmdlabtech/bud, permission
+   **Issues: Read and write** (Metadata: Read is added automatically), with an expiry (e.g. 1 year; calendar a
+   renewal). Worker secret `GITHUB_FEEDBACK_TOKEN`. Same approach as Wondereye's GITHUB_FEEDBACK_TOKEN, but a
+   separate token scoped to bud.
+3. **Labels** in cmdlabtech/bud: `feedback`, `needs-triage`, `source:app`, `source:web` (GitHub creates missing
+   labels on issue create only if the token can; create them up front).
+
+Deploy (after "approve deploy" for bud-feedback):
+```
+cd feedback
+npx wrangler kv namespace create bud-feedback          # put the id in wrangler.jsonc kv_namespaces
+# set TURNSTILE_SITEKEY in wrangler.jsonc vars (public)
+npx wrangler secret put TURNSTILE_SECRET                # paste in the terminal prompt, not in chat
+npx wrangler secret put GITHUB_FEEDBACK_TOKEN
+# first deploy with "FEEDBACK_DRY_RUN": "true" in vars, check, then remove it and redeploy
+npx wrangler deploy
+curl https://bud-feedback.admin2655.workers.dev/health                              # ok
+curl -i https://bud-feedback.admin2655.workers.dev/verify-frame                     # CSP frame-ancestors loopback
+```
+Checks after deploy: open `/feedback` in a phone browser and send one test (dry run first, then one real issue
+that CMDLAB closes); in the Even app, More → Send feedback shows the Turnstile frame and a Send button.
+Then rebuild the .ehpk (`npm run pack`, FEEDBACK_URL default already points at bud-feedback).
+
+Kill switch: set `FEEDBACK_ENABLED` to anything but "true" and redeploy (the form then shows
+"Feedback couldn't be sent"). Logs: Workers Logs/traces/Logpush are off in `wrangler.jsonc`; rejects only
+`console.warn` a reason code, never text or IPs.
+
 ## 3. Glass inbox routine per bot (GATE: confirm card in each bot's chat; start Disabled until a test passes)
 Webhook routine named "Glass inbox", trigger `webhook`. Saved prompt:
 

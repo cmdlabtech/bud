@@ -1,0 +1,22 @@
+{
+  // BUD feedback -> GitHub issues in cmdlabtech/bud. Deploying needs CMDLAB's "approve deploy".
+  // Separate Worker on purpose: bud-forward stays zero-retention and binding-free.
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "bud-feedback",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "preview_urls": false,
+  "logpush": false,
+  "observability": { "enabled": false, "head_sampling_rate": 0, "logs": { "enabled": false, "invocation_logs": false, "persist": false }, "traces": { "enabled": false } },
+  // Hashed rate-limit counters (TTL about 1 h / 1 day) and 24 h duplicate-message hashes. No raw IP, no text.
+  // Create at deploy time: npx wrangler kv namespace create bud-feedback  -> put the id here.
+  "kv_namespaces": [{ "binding": "FEEDBACK_KV", "id": "REPLACE_WITH_KV_ID" }],
+  "vars": {
+    "FEEDBACK_ENABLED": "true",
+    "FEEDBACK_REPO": "cmdlabtech/bud",
+    "TURNSTILE_HOSTNAMES": "bud-feedback.admin2655.workers.dev",
+    "TURNSTILE_SITEKEY": ""  // public sitekey of the BUD Turnstile widget (set at deploy)
+  }
+  // Secrets (wrangler secret put, never committed): TURNSTILE_SECRET, GITHUB_FEEDBACK_TOKEN.
+}

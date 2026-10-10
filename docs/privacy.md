@@ -8,18 +8,45 @@ cmdlabtech (CMDLAB).
 **Zero retention:** BUD's forwarder passes your request straight to your bot and stores or logs nothing.
 Your keys stay on your phone. Your voice goes directly from your phone to xAI and never through BUD's forwarder.
 
+**The one thing BUD keeps is feedback you choose to send** from the phone page. It goes to a separate service
+(bud-feedback), not the forwarder, and is saved as a private GitHub issue for the BUD developer (details below).
+
 ## What the app uses and why
 - **Glasses microphone (g2-microphone).** Only while you hold or tap to talk. The recording goes from your
   phone **directly** to xAI's speech-to-text API (api.x.ai) with your own xAI API key. BUD does not store the
   audio, and it never passes through BUD's forwarder. You see the text and choose whether to send it.
 - **Phone storage (Even app local storage).** Your bot list (names, webhook URLs, sender keys) and your xAI
   API key are saved only on your phone. After you save a key, the page shows only its last four characters.
-- **Network.** Two destinations only:
+- **Network.** For BUD's main job, two destinations only:
   1. **xAI** (api.x.ai): your recording and your xAI key, for speech to text.
   2. **BUD's forwarder** (bud-forward, run by CMDLAB on Cloudflare Workers): each time you send, it receives
      the text you confirmed (up to 1,000 characters), that bot's webhook URL, and its sender key, plus a request
      id and a timestamp. It immediately makes one request to that Grok Bot webhook (api2.cursor.sh only), then
      answers your phone with only "sent" or "not sent" and a status code.
+
+  Only if you use them: **Send feedback** contacts BUD's feedback service (bud-feedback, also on Cloudflare
+  Workers) and Cloudflare Turnstile (challenges.cloudflare.com) for a bot check; **Donate** opens PayPal
+  (paypal.com) outside BUD. BUD sends PayPal nothing.
+
+## Feedback (the one thing BUD keeps)
+If you open **Send feedback** and press Send, BUD sends: the category (bug, idea or other), your title (optional,
+up to 80 characters) and message (up to 2,000 characters), the BUD version, and technical anti-spam fields (a
+Cloudflare Turnstile token, how long the form was open, and an empty hidden field). It never includes your
+webhook URLs, sender keys, xAI key, or the tasks you send: the form refuses text that looks like a key or webhook
+URL, or that contains a key saved on your phone, and the server refuses the same patterns again.
+
+- **Where it is kept:** as an issue in CMDLAB's **private** GitHub repository for BUD (cmdlabtech/bud), labelled
+  `feedback`, so the developer can read and act on it. GitHub stores it under its own privacy terms
+  (https://docs.github.com/site-policy/privacy-policies/github-general-privacy-statement). It stays until
+  CMDLAB closes and deletes it; ask at the contact below to have yours removed.
+- **What is not kept:** no name, email or account, and no IP address. The issue includes a shortened browser
+  description (user agent) to help reproduce bugs.
+- **Anti-spam:** the feedback service keeps short-lived counters keyed by a one-way hash of your IP address
+  (limits: 3 an hour, 10 a day) and a one-way hash of each message for 24 hours to drop duplicates. These expire
+  within a day and contain no readable IP address or message text. Cloudflare Turnstile checks that a person is
+  sending, under Cloudflare's privacy policy (https://www.cloudflare.com/turnstile-privacy-policy/).
+- Please leave out personal details. The zero-retention promise above is about the forwarder and the tasks you
+  send; it does not cover feedback, which is kept on purpose.
 
 ## What the forwarder does not do
 The forwarder exists only because Grok Bot webhooks can't be called directly from inside the Even app's WebView.
@@ -40,9 +67,12 @@ network security. The forwarder adds no logging or storage on top of that.
 - **xAI** receives your recordings for transcription, under your own xAI account. See xAI's privacy terms.
 - **Grok Bot** (the webhook service) receives the text you confirm, so your bot can work on it and reply in your
   Grok Bot chat. See Grok Bot's privacy terms.
-- **CMDLAB** receives nothing it keeps: the forwarder passes the text, webhook URL and key through while they are
-  in transit only.
+- **CMDLAB** keeps nothing from your tasks: the forwarder passes the text, webhook URL and key through while they
+  are in transit only. CMDLAB does keep feedback you choose to send (see above).
+- **GitHub** stores feedback issues in CMDLAB's private repository; **Cloudflare** runs the Turnstile check for
+  feedback.
 BUD has no ads, no analytics, and no account, and no data is sold or shared with anyone else.
+Donations go through PayPal's own site under PayPal's terms; BUD never sees payment details.
 
 ## Your choices
 Delete a bot or remove your xAI key on the BUD phone page at any time. Uninstalling BUD removes its local storage

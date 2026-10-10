@@ -5,7 +5,7 @@
   "min_sdk_version": "0.0.14",
   "name": "BUD",
   "tagline": "Bots Up Display",
-  "description": "BUD (Bots Up Display) lets you talk to your Grok Bots from your G2: pick a bot, speak a task, and it is sent. Replies arrive as Grok Bot notifications. Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing. Your keys stay on your phone. Your voice goes directly to xAI with your own API key to become text. Approvals stay in the Grok Bot app.",
+  "description": "BUD (Bots Up Display) lets you talk to your Grok Bots from your G2: pick a bot, speak a task, and it is sent. Replies arrive as Grok Bot notifications. Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing. Your keys stay on your phone. Your voice goes directly to xAI with your own API key to become text. Approvals stay in the Grok Bot app. The only thing BUD keeps is feedback you choose to send from the phone page, saved as a private GitHub issue for the developer.",
   "author": "cmdlabtech",
   "supported_languages": [
     "en"
@@ -13,10 +13,13 @@
   "permissions": [
     {
       "name": "network",
-      "desc": "Sends your recorded voice directly to xAI to turn it into text. Sends the text, with the bot's webhook URL and sender key, to BUD's zero-retention forwarder, which passes it to your bot's Grok Bot webhook and stores or logs nothing.",
+      "desc": "Voice goes directly to xAI to become text. Task text, webhook URL and sender key go to BUD's zero-retention forwarder, which passes them to your bot and stores nothing. Feedback you choose to send goes to BUD's separate feedback service and is kept as a private GitHub issue.",
       "whitelist": [
         "https://api.x.ai",
-        "https://bud-forward.admin2655.workers.dev"
+        "https://bud-forward.admin2655.workers.dev",
+        "https://bud-feedback.admin2655.workers.dev",
+        "https://challenges.cloudflare.com",
+        "https://www.paypal.com"
       ]
     },
     {

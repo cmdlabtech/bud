@@ -1,4 +1,4 @@
-// Network endpoints. Both origins must match app.json network.whitelist exactly
+// Network endpoints. Every origin here must be on app.json network.whitelist
 // (scripts/check-ehpk-urls.mjs fails the build on any other URL literal).
 export const STT_URL = 'https://api.x.ai/v1/stt';            // xAI speech to text (REST, multipart), direct from the phone
 export const STT_MODEL = 'grok-voice-transcribe-2.0';
@@ -7,6 +7,11 @@ export const STT_MODEL = 'grok-voice-transcribe-2.0';
 // through it; the webhook URL and sender key stay on the phone and ride along in each send only.
 export const FORWARDER_URL: string = (import.meta.env.VITE_FORWARDER_URL ?? '').replace(/\/+$/, '');
 export const FORWARDER_SEND_PATH = '/v1/send';
+// BUD feedback Worker (feedback/). Feedback is the one thing BUD keeps (a private GitHub issue);
+// it is a separate Worker from the forwarder. Build setting: FEEDBACK_URL (VITE_FEEDBACK_URL).
+export const FEEDBACK_URL: string = (import.meta.env.VITE_FEEDBACK_URL ?? '').replace(/\/+$/, '');
+export const DONATE_URL = 'https://www.paypal.com/donate/?hosted_button_id=Z5SDZULELYGNS'; // link only, opened outside BUD
+export const APP_VERSION: string = __APP_VERSION__;
 export const MAX_TEXT_CHARS = 1000;                           // forwarder rejects longer text
 export const SEND_TIMEOUT_MS = 12_000;                        // forwarder waits 8 s for the webhook
 export const STT_TIMEOUT_MS = 30_000;

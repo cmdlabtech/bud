@@ -4,11 +4,12 @@
   "private": true,
   "workspaces": [
     "app",
-    "forwarder"
+    "forwarder",
+    "feedback"
   ],
   "scripts": {
-    "test": "npm test --workspace=app && npm test --workspace=forwarder",
-    "typecheck": "npm run typecheck --workspace=app && npm run typecheck --workspace=forwarder",
+    "test": "npm test --workspace=app && npm test --workspace=forwarder && npm test --workspace=feedback",
+    "typecheck": "npm run typecheck --workspace=app && npm run typecheck --workspace=forwarder && npm run typecheck --workspace=feedback",
     "dev:app": "npm run dev --workspace=app",
     "dev:forwarder": "npm run dev:test --workspace=forwarder",
     "pack": "npm run pack --workspace=app"

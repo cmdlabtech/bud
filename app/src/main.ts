@@ -1,5 +1,6 @@
 import { AudioInputSource, EvenAppBridge, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
-import { FORWARDER_URL, MIC_STUB, SENT_SCREEN_MS } from './config';
+import { APP_VERSION, FORWARDER_URL, MIC_STUB, SENT_SCREEN_MS } from './config';
+import { initExternalLinks, initFeedbackForm } from './feedback';
 import { Controller } from './controller';
 import { toGesture } from './gestures';
 import { NetError, sendToBot, webhookBody, type Fetch } from './net';
@@ -41,6 +42,7 @@ async function main() {
   }
 
   let settings: Settings = await loadSettings(kv);
+  savedSecrets = () => [settings.xaiKey, ...settings.bots.flatMap(b => [b.url, b.key])].filter(Boolean);
   const display = new GlassDisplay(bridge);
   const ctl = new Controller({
     display, fetch: f,
@@ -149,5 +151,20 @@ async function main() {
 
   render();
 }
+
+// Donate link and feedback form: set up right away, independent of the glasses/bridge.
+// The feedback form refuses any text containing a key or webhook URL saved on this phone.
+let savedSecrets: () => string[] = () => [];
+async function initPhoneExtras() {
+  initExternalLinks();
+  const opts: Parameters<typeof initFeedbackForm>[0] = { version: APP_VERSION, savedSecrets: () => savedSecrets() };
+  // DEV ONLY (stripped from builds): with ?fake=..., feedback is faked too (no Turnstile frame, no GitHub issue).
+  if (import.meta.env.DEV && new URLSearchParams(location.search).get('fake')) {
+    const { createFakeNet, FAKE_FEEDBACK_BASE, FAKE_TURNSTILE_TOKEN } = await import('./dev/fake-net');
+    Object.assign(opts, { fetch: createFakeNet(new URLSearchParams(location.search).get('fake')!), base: FAKE_FEEDBACK_BASE, devToken: FAKE_TURNSTILE_TOKEN });
+  }
+  initFeedbackForm(opts);
+}
+void initPhoneExtras();
 
 main().catch(() => { console.error('[bud] start failed'); $('status').textContent = 'Could not connect to the glasses. Open the Even app and connect your G2.'; });

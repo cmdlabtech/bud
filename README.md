@@ -7,6 +7,10 @@ notifications, which the Even app mirrors to the glasses. Approvals always stay 
 **Zero retention:** BUD's forwarder passes your request straight to your bot and stores or logs nothing.
 Your keys stay on your phone.
 
+**Feedback is the one thing BUD keeps.** The phone page has a **Send feedback** form (same logic as Wondereye)
+that files a private GitHub issue in cmdlabtech/bud through a separate Worker, `feedback/` (bud-feedback). It
+never carries webhook URLs, keys or task text. The page also has a **Donate** pill (PayPal, same as Wondereye).
+
 The app runs in the Even app's WebView on the phone and calls:
 - **xAI speech to text** (`https://api.x.ai/v1/stt`) directly, with the user's own xAI API key. Audio never
   touches the forwarder.
@@ -24,6 +28,7 @@ hashes in 60 s windows. Cloudflare carries the traffic as the host. Details: doc
 ```
 app/       Even Hub plugin (SDK 0.0.14, Vite, TypeScript). Glasses UI + phone setup page.
 forwarder/ zero-retention Cloudflare Worker (POST /v1/send, GET /v1/health); retire/ retires bud-relay.
+feedback/  bud-feedback Worker: POST /api/feedback -> GitHub issue (Turnstile, rate limits), verify frame, /feedback.
 scripts/   pack + bundle URL/secret check, simulator drivers, fake webhook for local tests.
 store/    simulator screenshots for the listing (icon is drawn in the Even portal's editor).
 docs/     setup, store listing, privacy draft, submission checklist, simulator findings.
@@ -40,12 +45,24 @@ Everything is stored in the Even app's local storage on that phone. Keys are nev
 as "saved, ends abcd" after saving. Webhook URLs and sender keys leave the phone only inside each send, to the
 forwarder. The page shows the zero-retention note next to the key fields.
 
+- **Donate** (header): yellow pill to https://www.paypal.com/donate/?hosted_button_id=Z5SDZULELYGNS, opened like
+  Wondereye's links (`a[data-external]` → `window.open(url, '_blank', 'noopener,noreferrer')`, falling back to the
+  native `target="_blank"`). Link only; BUD fetches nothing from PayPal.
+- **Send feedback** (More card): Bug / Idea / Other, optional title (80), message (10–2,000), honeypot, Cloudflare
+  Turnstile in a frame served by bud-feedback (`/verify-frame`, because Turnstile can't run on the WebView's
+  127.0.0.1 origin), and a "Send feedback in your browser instead" fallback to bud-feedback's `/feedback` page.
+  The note says feedback is the one thing BUD keeps. The form refuses text that looks like a key or webhook URL
+  or that contains a key saved on the phone; bud-feedback refuses the same patterns. No glasses menu item
+  (Wondereye has none).
+
 ## Defaults
 | Setting | Default | Where |
 |---|---|---|
 | App name | BUD (tagline "Bots Up Display") | app/app.json |
 | Package id | tech.cmdlab.bud | app/app.json (permanent once uploaded) |
-| Network whitelist | `https://api.x.ai`, forwarder origin | app/app.json (pack checks it equals these two) |
+| Network whitelist | `https://api.x.ai`, forwarder, feedback, `https://challenges.cloudflare.com`, `https://www.paypal.com` | app/app.json (pack checks it equals these five) |
+| Feedback | `FEEDBACK_URL`, default `https://bud-feedback.admin2655.workers.dev` | scripts/pack.mjs → VITE_FEEDBACK_URL |
+| Feedback limits | 3/hour and 10/day per hashed IP, 50/day total, 24 h duplicate drop, title 80, message 2,000 | feedback/src/feedback.ts |
 | Forwarder | `FORWARDER_URL`, default `https://bud-forward.admin2655.workers.dev` | scripts/pack.mjs → VITE_FORWARDER_URL |
 | Forwarder limits | 6 KB request, 1,000-char text, 10 sends/min per webhook, 30/min per client, 8 s upstream timeout | forwarder/src/forward.ts, forwarder/wrangler.jsonc |
 | Transcription | xAI `grok-voice-transcribe-2.0` | app/src/config.ts |
@@ -56,21 +73,30 @@ forwarder. The page shows the zero-retention note next to the key fields.
 npm install
 VITE_MIC_STUB=1 npm run dev:app                 # app on :5174
 scripts/sim-start.sh "fake=1"                   # simulator with faked xAI + forwarder (dev builds only)
-                                                # also fake=sendfail, fake=sttfail
-npm test && npm run typecheck                   # app + forwarder
+                                                # also fake=sendfail, fake=sttfail, fake=fbfail, fake=fbrate
+                                                # (feedback is always faked with ?fake=..., no Turnstile, no GitHub)
+npm test && npm run typecheck                   # app + forwarder + feedback
 
 # forwarder end to end, locally (never touches api2.cursor.sh)
 node scripts/fake-webhook.mjs &                 # fake webhook on 127.0.0.1:8899
 npm run dev:forwarder                           # wrangler dev on :8787 (wrangler.dev-test.jsonc)
 VITE_FORWARDER_URL=http://127.0.0.1:8787 VITE_MIC_STUB=1 npm run dev:app
 scripts/sim-start.sh "fake=sttonly"             # only xAI faked; sends go through the local forwarder
+
+# feedback end to end, locally, with Cloudflare's Turnstile TEST keys and dry run (no GitHub issue)
+#   feedback/.dev.vars (gitignored): FEEDBACK_DRY_RUN="true", TURNSTILE_SITEKEY="1x00000000000000000000AA",
+#   TURNSTILE_SECRET="1x0000000000000000000000000000000AA", GITHUB_FEEDBACK_TOKEN="unused",
+#   TURNSTILE_HOSTNAMES="localhost,127.0.0.1"
+(cd feedback && npx wrangler dev --port 8787)
+VITE_FEEDBACK_URL=http://127.0.0.1:8787 npm run dev:app
 ```
 
 ## Build the package
 ```
-FORWARDER_URL=https://bud-forward.admin2655.workers.dev npm run pack
+FORWARDER_URL=https://bud-forward.admin2655.workers.dev FEEDBACK_URL=https://bud-feedback.admin2655.workers.dev npm run pack
 ```
-Builds into `../builds/`. Fails unless the app.json whitelist is exactly xAI + the forwarder origin, then runs
+Builds into `../builds/`. Fails unless the app.json whitelist is exactly xAI, the forwarder, the feedback origin,
+Turnstile and PayPal, then runs
 `scripts/check-ehpk-urls.mjs`, which fails on any URL literal outside the whitelist, on secrets (xAI keys, bearer
 literals, private keys, a baked-in webhook URL), on a direct webhook origin, and on dev-only code (fake network,
 localhost, DEV_UPSTREAM).
@@ -81,3 +107,5 @@ localhost, DEV_UPSTREAM).
   gets 400 `bad_webhook_url`; Workers Logs shows 0 events for bud-forward.
 - bud-relay is still deployed (relay code, GlassStore DO, ADMIN_TOKEN/BOT_WRITE_TOKEN). Retiring it is a separate
   gate (docs/setup.md step 2).
+- bud-feedback is NOT deployed yet (branch feedback-donate). Until it is, the in-app form shows "Verification could
+  not load" and the browser fallback fails; deploy steps in docs/setup.md step 2b.
