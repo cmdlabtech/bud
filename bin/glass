@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+# glass: tiny client bots use to talk to the Grok Bot Glass relay.
+#
+#   glass reply   <bot_id> <message_id> <reply text ≤1500 chars; glasses page it>
+#   glass need    <bot_id> <ref> <approval|question|draft|other> <title ≤60> [detail ≤400]
+#   glass resolve <bot_id> <ref>
+#   glass pair-code            (admin) one-time 8-digit pairing code, valid 10 min
+#   glass devices              (admin) list paired devices
+#   glass revoke  <device_id>  (admin) revoke a device
+#
+# Env:
+#   GLASS_RELAY_URL                    e.g. https://grokbot-glass-relay.<sub>.workers.dev
+#   GLASS_BOT_TOKEN or GLASS_BOT_TOKEN_FILE      bot write token (reply/need/resolve)
+#   GLASS_ADMIN_TOKEN or GLASS_ADMIN_TOKEN_FILE  admin token (pair-code/devices/revoke)
+# Tokens are read from env or a file and are never printed.
+set -euo pipefail
+
+die() { echo "glass: $*" >&2; exit 2; }
+[ -n "${GLASS_RELAY_URL:-}" ] || die "GLASS_RELAY_URL is not set"
+RELAY="${GLASS_RELAY_URL%/}"
+
+token_from() { # <env var> <file var>
+  local v="${!1:-}" f="${!2:-}"
+  if [ -z "$v" ] && [ -n "$f" ]; then [ -r "$f" ] || die "cannot read \$$2"; v="$(tr -d '\r\n' < "$f")"; fi
+  [ -n "$v" ] || die "\$$1 (or \$$2) is not set"
+  printf '%s' "$v"
+}
+
+json() { python3 -c 'import json,sys; a=sys.argv[1:]; print(json.dumps(dict(zip(a[0::2], a[1::2]))))' "$@"; }
+rid() { python3 -c 'import uuid; print(uuid.uuid4())'; }
+now_ms() { python3 -c 'import time; print(int(time.time()*1000))'; }
+
+call() { # <method> <path> <token> [json body]
+  local method="$1" path="$2" tok="$3" body="${4:-}"
+  local hdr; hdr="$(mktemp)"; chmod 600 "$hdr"
+  # Pass the token through a header file so it never shows in the process list.
+  printf 'Authorization: Bearer %s\nX-Glass-Ts: %s\nX-Glass-Request-Id: %s\nContent-Type: application/json\n' "$tok" "$(now_ms)" "$(rid)" > "$hdr"
+  local out code
+  if [ -n "$body" ]; then
+    out="$(curl -sS -m 15 -X "$method" -H @"$hdr" --data "$body" -w '\n%{http_code}' "$RELAY$path")" || { rm -f "$hdr"; die "network error"; }
+  else
+    out="$(curl -sS -m 15 -X "$method" -H @"$hdr" -w '\n%{http_code}' "$RELAY$path")" || { rm -f "$hdr"; die "network error"; }
+  fi
+  rm -f "$hdr"
+  code="${out##*$'\n'}"; out="${out%$'\n'*}"
+  echo "$out"
+  [ "${code:0:1}" = "2" ] || { echo "glass: HTTP $code" >&2; exit 1; }
+}
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  reply)
+    [ $# -eq 3 ] || die "usage: glass reply <bot_id> <message_id> <short>"
+    call POST /v1/replies "$(token_from GLASS_BOT_TOKEN GLASS_BOT_TOKEN_FILE)" "$(json bot_id "$1" message_id "$2" short "$3")" ;;
+  need)
+    [ $# -ge 4 ] || die "usage: glass need <bot_id> <ref> <kind> <title> [detail]"
+    call POST /v1/needs "$(token_from GLASS_BOT_TOKEN GLASS_BOT_TOKEN_FILE)" "$(json bot_id "$1" ref "$2" kind "$3" title "$4" detail "${5:-}")" ;;
+  resolve)
+    [ $# -eq 2 ] || die "usage: glass resolve <bot_id> <ref>"
+    call POST /v1/needs/resolve "$(token_from GLASS_BOT_TOKEN GLASS_BOT_TOKEN_FILE)" "$(json bot_id "$1" ref "$2")" ;;
+  pair-code) call POST /v1/pair/code "$(token_from GLASS_ADMIN_TOKEN GLASS_ADMIN_TOKEN_FILE)" '{}' ;;
+  devices)   call GET /v1/devices "$(token_from GLASS_ADMIN_TOKEN GLASS_ADMIN_TOKEN_FILE)" ;;
+  revoke)    [ $# -eq 1 ] || die "usage: glass revoke <device_id>"; call DELETE "/v1/devices/$1" "$(token_from GLASS_ADMIN_TOKEN GLASS_ADMIN_TOKEN_FILE)" ;;
+  ""|-h|--help|help) sed -n '2,15p' "$0" ;;
+  *) die "unknown command: $cmd (try: glass help)" ;;
+esac

@@ -1,0 +1,27 @@
+{
+  "package_id": "tech.cmdlab.grokbotglass",
+  "edition": "202601",
+  "version": "1.0.0",
+  "min_sdk_version": "0.0.14",
+  "name": "Grok Bot Glass",
+  "tagline": "Talk to your Grok Bots from your G2.",
+  "description": "See which of your Grok Bots need you, read their replies, and speak a message to any bot with a long press. Approvals stay in the Grok Bot app. Needs your own Grok Bot Glass relay and a pairing code from your Grok Bot.",
+  "author": "cmdlabtech",
+  "supported_languages": [
+    "en"
+  ],
+  "permissions": [
+    {
+      "name": "network",
+      "desc": "Sends your messages to your own Grok Bot Glass relay and loads bot replies and the items that need you.",
+      "whitelist": [
+        "https://grokbot-glass-relay.REPLACE-ME.workers.dev"
+      ]
+    },
+    {
+      "name": "g2-microphone",
+      "desc": "Records a short voice message while you hold or tap to talk. The audio goes to your relay to be turned into text, and the relay does not keep it."
+    }
+  ],
+  "entrypoint": "index.html"
+}

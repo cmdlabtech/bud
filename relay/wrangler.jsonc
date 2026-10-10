@@ -1,0 +1,13 @@
+{
+  // Grok Bot Glass relay. Deploying needs CMDLAB's "approve deploy".
+  "name": "grokbot-glass-relay",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "durable_objects": { "bindings": [{ "name": "STORE", "class_name": "GlassStore" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GlassStore"] }],
+  "observability": { "enabled": true },
+  "limits": { "cpu_ms": 1000 }
+  // Secrets (wrangler secret put, never committed): ADMIN_TOKEN, BOT_WRITE_TOKEN,
+  // XAI_API_KEY, WEBHOOK_URL_<SUFFIX>, WEBHOOK_KEY_<SUFFIX> per bot in src/roster.json.
+}

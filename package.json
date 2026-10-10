@@ -1,0 +1,13 @@
+{
+  "name": "grokbot-glass",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["relay", "app"],
+  "scripts": {
+    "test": "npm test --workspace=relay && npm test --workspace=app",
+    "typecheck": "npm run typecheck --workspace=relay && npm run typecheck --workspace=app",
+    "dev:relay": "npm run dev --workspace=relay",
+    "dev:app": "npm run dev --workspace=app",
+    "pack": "npm run pack --workspace=app"
+  }
+}
