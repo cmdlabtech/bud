@@ -1,7 +1,7 @@
 {
   "package_id": "tech.cmdlab.bud",
   "edition": "202601",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "min_sdk_version": "0.0.14",
   "name": "BUD",
   "tagline": "Bots Up Display",
