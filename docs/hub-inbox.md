@@ -1,5 +1,9 @@
 # Hub inbox routine (BUD 1.0.2 hub mode)
 
+**Public hub bot template:** https://x.ai/bot/915uZ58K2YkQhevdmxt74 ("BUD for Even Realities G2 by CMDLAB"). Adding it to Grok Bot gives a
+hub that already carries the routine prompt below: it sets up its own inbox, lists the bots and routes tasks.
+The phone page links it as **Get the BUD hub bot**. Use the prompt below by hand only for a hub you build yourself.
+
 Hub mode lets a user set up BUD once: one "hub" bot gets the BUD webhook, and every teammate bot shows up on
 the glasses by name. The hub hands each task to the named teammate, which does the work and replies in its own
 chat, so its Grok Bot notification reaches the glasses as usual.
@@ -10,8 +14,9 @@ The user's side, end to end. The phone page walks through the same order with a 
 
 1. **Speech key (Setup 1/2).** On BUD's phone page tap **Get an xAI API key**, copy the key, come back, tap
    **Paste key**. It saves itself.
-2. **Ask the hub (one message).** Tap **Copy** next to "Set up BUD for my glasses", and send that to the bot
-   that will be the hub (any bot that can see and message its teammates, for example a general "Assistant bot").
+2. **Add the hub and ask it (one message).** Tap **Get the BUD hub bot** (https://x.ai/bot/915uZ58K2YkQhevdmxt74), add it in Grok
+   Bot, then tap **Copy** next to "Set up BUD for my glasses" and send that to it. (Or use your own bot with the
+   saved prompt below.)
 3. **The hub sets itself up (one reply).** The first time, the hub creates a webhook routine named
    **"BUD hub inbox"** with the saved prompt below (Grok Bot shows its normal routine card) and replies with
    one short message with two links that open the routine's fields (from the routine's status line):

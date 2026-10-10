@@ -49,6 +49,6 @@ export function setupProgress(s: { xaiKey: boolean; hub: boolean }): { step: 1 |
 export function remainingSteps(s: { xaiKey: boolean; hub: boolean; bots: number }): string[] {
   const steps: string[] = [];
   if (!s.xaiKey) steps.push('Add your xAI key (speech to text)');
-  if (!s.hub && s.bots === 0) steps.push('Connect your hub bot (paste setup)');
+  if (!s.hub && s.bots === 0) steps.push('Add the BUD hub bot in Grok Bot, then paste setup');
   return steps;
 }

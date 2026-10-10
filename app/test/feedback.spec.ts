@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { DONATE_URL, XAI_KEYS_URL } from '../src/config';
+import { DONATE_URL, HUB_BOT_URL, XAI_KEYS_URL } from '../src/config';
 import { buildPayload, fallbackUrl, isFatalVerifyCode, isVerifyMessage, looksSecret, verifyFrameUrl, verifyOrigin, MSG_MAX, TITLE_MAX } from '../src/feedback';
 
 const BASE = 'https://bud-feedback.admin2655.workers.dev';
@@ -68,9 +68,13 @@ describe('phone page', () => {
     expect(html).toMatch(/href="https:\/\/console\.x\.ai\/team\/default\/api-keys" target="_blank" rel="noopener noreferrer" data-external>Get an xAI API key<\/a>/);
     expect(html).toContain('it stays on this phone.');
   });
+  it('has the "Get the BUD hub bot" link (public Grok Bot template) opened like Donate', () => {
+    expect(HUB_BOT_URL).toBe('https://x.ai/bot/915uZ58K2YkQhevdmxt74');
+    expect(html).toMatch(/href="https:\/\/x\.ai\/bot\/915uZ58K2YkQhevdmxt74" target="_blank" rel="noopener noreferrer" data-external>Get the BUD hub bot<\/a>/);
+  });
   it('whitelist covers every origin, and zero-retention copy stays scoped to the forwarder', () => {
     const wl = manifest.permissions.find((p: any) => p.name === 'network').whitelist;
-    expect(wl).toEqual(['https://api.x.ai', 'https://bud-forward.admin2655.workers.dev', 'https://bud-feedback.admin2655.workers.dev', 'https://challenges.cloudflare.com', 'https://www.paypal.com', 'https://console.x.ai']);
+    expect(wl).toEqual(['https://api.x.ai', 'https://bud-forward.admin2655.workers.dev', 'https://bud-feedback.admin2655.workers.dev', 'https://challenges.cloudflare.com', 'https://www.paypal.com', 'https://console.x.ai', 'https://x.ai']);
     expect(manifest.description).toContain("Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing.");
     expect(manifest.description).toContain('The only thing BUD keeps is feedback');
   });

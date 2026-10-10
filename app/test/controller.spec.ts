@@ -72,7 +72,7 @@ describe('home: bot list', () => {
     await ctl.start();
     expect(ctl.screen).toBe('setup');
     expect(display.text('state')).toMatch(/Open BUD on your phone to finish setup/);
-    expect(display.text('why')).toBe('1. Add your xAI key (speech to text)\n2. Connect your hub bot (paste setup)');
+    expect(display.text('why')).toBe('1. Add your xAI key (speech to text)\n2. Add the BUD hub bot in Grok Bot, then paste setup');
     setSettings(SETTINGS);
     await ctl.handle({ kind: 'press' });
     expect(ctl.screen).toBe('home');

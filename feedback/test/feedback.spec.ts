@@ -313,3 +313,22 @@ describe('CORS, verify frame and pages', () => {
     expect((await route(new Request(`${SELF}/health`), env as any)).status).toBe(200);
   });
 });
+
+describe('legal pages (/privacy, /terms)', () => {
+  it('serve the generated policy pages, in sync with docs', async () => {
+    const { execFileSync } = await import('node:child_process');
+    execFileSync(process.execPath, [new URL('../../scripts/build-legal.mjs', import.meta.url).pathname, '--check']);
+    for (const [path, title] of [['/privacy', 'Privacy Policy'], ['/terms', 'Terms of Use']]) {
+      const res = await route(new Request('https://bud-feedback.example' + path), {} as any);
+      expect(res.status).toBe(200);
+      expect(res.headers.get('content-type')).toContain('text/html');
+      expect(res.headers.get('content-security-policy')).toContain("default-src 'none'");
+      expect(res.headers.get('x-robots-tag')).toBeNull();
+      const html = await res.text();
+      expect(html).toContain(title);
+      expect(html).not.toMatch(/<script/i);
+    }
+    const priv = await (await route(new Request('https://bud-feedback.example/privacy'), {} as any)).text();
+    for (const w of ['g2-microphone', 'api.x.ai', 'bud-forward', 'Turnstile', 'not affiliated', 'Contact']) expect(priv).toContain(w);
+  });
+});

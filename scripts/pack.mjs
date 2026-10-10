@@ -22,6 +22,7 @@ const DEFAULT_FEEDBACK = 'https://bud-feedback.admin2655.workers.dev'; // planne
 const TURNSTILE = 'https://challenges.cloudflare.com';
 const PAYPAL = 'https://www.paypal.com';
 const XAI_CONSOLE = 'https://console.x.ai'; // "Get an xAI API key" link-out (literal, like PayPal)
+const HUB_BOT = 'https://x.ai'; // "Get the BUD hub bot" Grok Bot template link-out (literal, like PayPal)
 function bareOrigin(name, value) {
   const v = value.replace(/\/+$/, '');
   try { const u = new URL(v); if (u.protocol === 'https:' && u.origin === v) return u.origin; } catch { /* invalid */ }
@@ -31,7 +32,7 @@ function bareOrigin(name, value) {
 const fwdOrigin = bareOrigin('FORWARDER_URL', process.env.FORWARDER_URL || DEFAULT_FORWARDER);
 const fbOrigin = bareOrigin('FEEDBACK_URL', process.env.FEEDBACK_URL || DEFAULT_FEEDBACK);
 const wl = ((manifest.permissions || []).find(p => p.name === 'network')?.whitelist || []).map(u => new URL(u).origin).sort();
-const want = ['https://api.x.ai', fwdOrigin, fbOrigin, TURNSTILE, PAYPAL, XAI_CONSOLE].sort();
+const want = ['https://api.x.ai', fwdOrigin, fbOrigin, TURNSTILE, PAYPAL, XAI_CONSOLE, HUB_BOT].sort();
 if (JSON.stringify(wl) !== JSON.stringify(want)) {
   console.error(`app.json network whitelist must be exactly ${JSON.stringify(want)}; it is ${JSON.stringify(wl)}`);
   process.exit(1);

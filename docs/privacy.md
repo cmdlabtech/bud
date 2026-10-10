@@ -1,9 +1,9 @@
-# BUD (Bots Up Display) — Privacy Policy (DRAFT, needs CMDLAB review and a public URL)
+# BUD (Bots Up Display) Privacy Policy
 
-Last updated: (fill in at publish)
+Effective: October 10, 2026 (BUD 1.0.3)
 
 BUD (Bots Up Display) lets you talk to your own Grok Bots from Even Realities G2 glasses. It is published by
-cmdlabtech (CMDLAB).
+CMDLAB (cmdlabtech). BUD is an independent app, not affiliated with or endorsed by xAI or Even Realities. It works with your own Grok Bot account and your own xAI API key.
 
 **Zero retention:** BUD's forwarder passes your request straight to your bot and stores or logs nothing.
 Your keys stay on your phone. Your voice goes directly from your phone to xAI and never through BUD's forwarder.
@@ -30,7 +30,8 @@ Your keys stay on your phone. Your voice goes directly from your phone to xAI an
 
   Only if you use them: **Send feedback** contacts BUD's feedback service (bud-feedback, also on Cloudflare
   Workers) and Cloudflare Turnstile (challenges.cloudflare.com) for a bot check; **Donate** opens PayPal
-  (paypal.com) outside BUD. BUD sends PayPal nothing.
+  (paypal.com) outside BUD. BUD sends PayPal nothing. **Get an xAI API key** and **Get the BUD hub bot** open
+  xAI's console and the BUD hub bot template on x.ai, also outside BUD; BUD sends them nothing.
 
 ## Feedback (the one thing BUD keeps)
 If you open **Send feedback** and press Send, BUD sends: the category (bug, idea or other), your title (optional,
@@ -82,4 +83,11 @@ Donations go through PayPal's own site under PayPal's terms; BUD never sees paym
 Remove the hub, clear the bot names, delete a direct bot or remove your xAI key on the BUD phone page at any time. Uninstalling BUD removes its local storage
 from the Even app.
 
-Contact: (CMDLAB contact email)
+## Children
+BUD is not directed at children under 13 and does not knowingly collect their information.
+
+## Changes
+If this policy changes, the new version is posted at this address with a new effective date.
+
+## Contact
+Questions or removal requests: cameron@cmdlab.tech

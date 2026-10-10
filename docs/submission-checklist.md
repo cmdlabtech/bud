@@ -1,11 +1,34 @@
-# Even Hub submission checklist — BUD (Bots Up Display) 1.0.2 (hub mode)
+# Even Hub submission checklist — BUD (Bots Up Display) 1.0.3 (hub mode)
 
 Source for every item: https://hub.evenrealities.com/docs/ship/app-submission (updated 2026-08-07) unless noted.
 Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not verifiable here
 
+## 1.0.3 store run (Oct 10, 2026, against app-submission updated 2026-08-07)
+| Check | Status | Note |
+|---|---|---|
+| package_id, edition, name ≤20 no "Even", semver, min_sdk 0.0.14, entrypoint | PASS | tech.cmdlab.bud, 202601, BUD, 1.0.3 |
+| Permissions: objects, desc 1–300, network whitelist | PASS | 285 / 128 chars |
+| Every permission used | PASS | network (xAI, forwarder, feedback), g2-microphone |
+| No secrets in bundle | PASS | release check OK |
+| Changelog / release notes non-empty | READY | docs/store-listing.md (151 chars, 1 line) |
+| Icon legible, 1-bit, 2x2 | TODO | draw in the portal's 24x24 editor (docs/icon.md) |
+| Foreground + background, greyscale | READY | store/cover/cover-576x288.png (spec unverified) |
+| Screenshots from the simulator | PASS | store/screenshots/1-5 (576x288) |
+| Display name = app.json = glasses | PASS | "BUD" |
+| No impersonation / logos / keyword stuffing | PASS | Grok Bot named nominatively; "Not affiliated with xAI." |
+| Privacy covers every permission; backend domains traceable | PASS (draft) | /privacy not live until bud-feedback deploy; contact is a placeholder |
+| First run: on-glasses message, setup remembered, CORS | PASS | "Open BUD on your phone to finish setup"; localStorage; forwarder CORS |
+| Reviewer can run the core flow | FAIL | needs a Grok Bot hub + xAI key: demo mode recommended (docs/review-notes.md) |
+| New user can set up from the store copy | PASS | 1.0.3: public BUD hub bot template linked in the listing, phone page and glasses step |
+| Locked phone, 2-min idle, unlock/relock | UNTESTED | needs a beta build on CMDLAB's phone |
+| Root double press → shutDownPageContainer(1) | PASS | code + simulator |
+| WebView closes after exit; Conversate launches | UNTESTED | on device |
+| Content & safety | PASS | no medical/financial/emergency features; terms say so |
+| `evenhub pack ... -c` (package_id availability) | NOT RUN | contacts Even; run at submission |
+
 ## Manifest
 - ✅ package_id `tech.cmdlab.bud` (valid format). ⏳ availability: `evenhub pack ... -c` contacts Even (run at gate time)
-- ✅ edition 202601 · name "BUD" 3 chars, no "Even" · version 1.0.2 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
+- ✅ edition 202601 · name "BUD" 3 chars, no "Even" · version 1.0.3 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
 - ✅ entrypoint index.html exists in the build folder (pack succeeded)
 - ✅ permissions are objects with name+desc (network desc 285/300 chars); network whitelist is `https://api.x.ai`, `https://bud-forward.admin2655.workers.dev`, `https://bud-feedback.admin2655.workers.dev`, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai` (exact origins, no wildcards; pack fails if it differs from FORWARDER_URL/FEEDBACK_URL + Turnstile + PayPal + xAI console; the last two are link-out literals, whitelisted as in Wondereye)
 - ✅ every permission is used: network (xAI STT + forwarder POST + feedback POST/verify frame + Donate link literal), g2-microphone (`audioControl(true, AudioInputSource.Glasses)`)

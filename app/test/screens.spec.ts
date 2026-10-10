@@ -7,7 +7,7 @@ describe('screens fit the Even limits', () => {
   const pages = [
     homePage({ names: ['Research bot', 'Inbox bot'], selected: 0, showPos: true }),
     homePage({ names, selected: 29, showPos: false }),
-    setupPage({ steps: ['Add your xAI key (speech to text)', 'Connect your hub bot (paste setup)'] }), setupPage({ steps: ['Add your xAI key (speech to text)'], message: 'x' }), setupPage({ steps: [] }),
+    setupPage({ steps: ['Add your xAI key (speech to text)', 'Add the BUD hub bot in Grok Bot, then paste setup'] }), setupPage({ steps: ['Add your xAI key (speech to text)'], message: 'x' }), setupPage({ steps: [] }),
     listeningPage({ botName: 'Research bot', elapsedMs: 4200, levels: [100, 3000], holdMode: true }),
     transcriptPage({ botName: 'Research bot', text: null }), transcriptPage({ botName: 'Research bot', text: 'x'.repeat(2000) }), transcriptPage({ botName: 'Research bot', text: '', error: 'err' }),
     sentPage({ botName: 'Research bot', sending: true }), sentPage({ botName: 'Research bot', sending: false }),

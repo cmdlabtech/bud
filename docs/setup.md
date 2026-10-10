@@ -1,4 +1,4 @@
-# Setup for CMDLAB — BUD 1.0.2 (hub mode, zero-retention forwarder)
+# Setup for CMDLAB — BUD 1.0.3 (hub mode, zero-retention forwarder)
 
 Flow: glasses → phone → **xAI directly** (speech to text, the user's key) → **BUD forwarder** (`forwarder/`,
 zero retention) → the bot's Grok Bot webhook. No pairing and no polling. Replies arrive as Grok Bot phone notifications.
@@ -114,7 +114,7 @@ Kill switch: set `FEEDBACK_ENABLED` to anything but "true" and redeploy (the for
 `console.warn` a reason code, never text or IPs.
 
 ## 3. Hub bot (1.0.2, recommended): see docs/hub-inbox.md
-One webhook routine, "BUD hub inbox", on one bot. The user sends that bot "Set up BUD for my glasses"; the hub
+Public template: https://x.ai/bot/915uZ58K2YkQhevdmxt74 (it carries the routine prompt). Or one webhook routine, "BUD hub inbox", on one bot of your own. The user sends that bot "Set up BUD for my glasses"; the hub
 creates the routine (normal routine card), replies with where to copy the URL and key, and answers BUD's first
 test with the BUD1 bot list code alone in one message. Full prompt and getting-started there.
 
@@ -135,7 +135,8 @@ the forwarder (HTTPS), by CMDLAB's design.
 First run shows a progress banner: **Setup 1/2: Speech key** → **Setup 2/2: Connect your hub bot** → **Setup done**.
 The glasses meanwhile say "Open BUD on your phone to finish setup" and list the missing steps.
 1. Tap **Paste key** for the xAI API key (link "Get an xAI API key" opens the xAI console). Saves by itself.
-2. Tap **Copy** ("Set up BUD for my glasses") and send it to the hub bot.
+2. Tap **Get the BUD hub bot** (public Grok Bot template, https://x.ai/bot/915uZ58K2YkQhevdmxt74), add it in Grok Bot, then tap **Copy**
+   ("Set up BUD for my glasses") and send it to the hub bot.
 3. Paste the routine's webhook URL and sender key into the one **Paste setup** box, by the **Paste** button
    (reads the clipboard if the WebView allows it) or by long-press → Paste. Any order, one paste or several;
    a checklist shows Webhook URL, Sender key, Connection test, Bot list. As soon as both are in, BUD saves

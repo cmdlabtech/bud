@@ -1,36 +1,67 @@
-# Store listing draft — BUD (Bots Up Display) v1.0.2 (hub mode), for CMDLAB's review
+# Store listing — BUD (Bots Up Display) 1.0.3, FINAL DRAFT for CMDLAB's review
 
-Branding rule: always show the tagline with the name ("BUD — Bots Up Display") in store copy, so the name reads as "bots up", not slang.
+Nothing is submitted. Sources: [submission](https://hub.evenrealities.com/docs/ship/app-submission) (updated
+2026-08-07), [packaging](https://hub.evenrealities.com/docs/ship/packaging), [design guidelines](https://hub.evenrealities.com/docs/build/design-guidelines),
+[videos EP13](https://hub.evenrealities.com/docs/learn/videos) (lists the form: .ehpk, name and tagline, icon,
+simulator screenshots, category and search tags, privacy checklist). Even's docs give **no character limit for
+the tagline or description and no screenshot pixel size**; the portal form may enforce its own. Counts below
+are exact so they can be checked against the form.
 
-All copy avoids audio-output claims (the G2 has no speaker) and says approvals happen in the Grok Bot app only.
+## Fields
 
-| Field | Draft | Rule it meets (source) |
-|---|---|---|
-| Name | BUD | ≤20 chars, must not contain "Even" ([submission](https://hub.evenrealities.com/docs/ship/app-submission), [packaging](https://hub.evenrealities.com/docs/ship/packaging)). 3 chars. Also shown on the glasses (list header "BUD", setup header "BUD   Bots Up Display"), so portal name = app.json name = on-glasses name. |
-| Package id | tech.cmdlab.bud | reverse-domain, lowercase, no hyphens/underscores, ≥2 segments, each starts with a letter ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
-| Version | 1.0.2 | three-part semver, no `v`, no suffix ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
-| Edition / min SDK | 202601 / 0.0.14; CLI stamps min_app_version 2.2.9 | ([packaging](https://hub.evenrealities.com/docs/ship/packaging): "SDK 0.0.14 publishes a floor of 2.2.9") — confirmed by our pack output |
-| Languages | en | valid set en/de/fr/es/it/zh/ja/ko ([packaging](https://hub.evenrealities.com/docs/ship/packaging)) |
-| Tagline | Bots Up Display | `tagline` is not in Even's field table; Wondereye ships one. Portal also asks for a tagline ([videos](https://hub.evenrealities.com/docs/learn/videos), ep. on the submission form). |
-| Description | BUD (Bots Up Display) lets you talk to your Grok Bots from your G2: pick a bot, speak a task, and it is sent. Set up once: connect one hub bot and every teammate shows up on your glasses by name. Replies arrive as Grok Bot notifications. Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing. Your keys stay on your phone. Your voice goes directly to xAI with your own API key to become text. Approvals stay in the Grok Bot app. The only thing BUD keeps is feedback you choose to send from the phone page, saved as a private GitHub issue for the developer. | no keyword stuffing ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
-| Release notes (en) | 1.0.2: Hub mode. Connect one hub bot and all your bots appear on your glasses. One-paste setup: paste the webhook URL, sender key and bot list code in any order, and BUD tests the connection for you. | first version describes what the app does, 1–3 lines ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
-| Permission: network | Voice goes directly to xAI to become text. Task text, bot name, webhook URL and sender key go to BUD's zero-retention forwarder, which passes them to your bot and stores nothing. Feedback you choose to send goes to BUD's separate feedback service and is kept as a private GitHub issue. (285 chars) Whitelist: `https://api.x.ai`, `https://bud-forward.admin2655.workers.dev`, `https://bud-feedback.admin2655.workers.dev`, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai` (as in Wondereye: Turnstile for the feedback check; PayPal and the xAI console are link-out literals for Donate and "Get an xAI API key"). | `desc` 1–300 chars; network needs `whitelist`; declare only what is used ([packaging](https://hub.evenrealities.com/docs/ship/packaging)) |
-| Permission: g2-microphone | Records a short voice message while you hold or tap to talk. The audio goes to xAI with your own API key to be turned into text. | `g2-microphone` maps to `audioControl(true, AudioInputSource.Glasses)`, which app/src/main.ts calls ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
-| Icon | Draw in the Developer Portal's 24x24 pixel editor (Even's own tool, web, needs login). No custom image. Rules: 1-bit, every lit pixel in a 2x2 block, greyscale only, legible | [design guidelines](https://hub.evenrealities.com/docs/build/design-guidelines) "The store icon … is drawn in the Developer Portal's 24 x 24 pixel editor and validated on upload"; [submission](https://hub.evenrealities.com/docs/ship/app-submission) |
-| Icon background | Still not determinable from Even's docs: they only say "both foreground and background are supplied (neither null nor empty)" and greyscale ([submission](https://hub.evenrealities.com/docs/ship/app-submission)). An unofficial tool's README describes the portal icon as two-tone with a white-on-black "Even Hub standard" ([g2-icon-studio](https://github.com/naotake/g2-icon-studio), unofficial), which suggests "background" is the icon's background tone in the same editor, not a separate image. Confirm in the portal form. | unverified |
-| Screenshots | store/screenshots/1-bot-list.png, 2-listening.png, 3-transcript.png, 4-sent.png: recaptured Oct 10, 2026 for the 1.0 scope with generic bot names (Research bot, Inbox bot, ...), simulator `fake=1`, RGBA 576x288. No personal bot names anywhere in store assets. | simulator screenshot API ([submission](https://hub.evenrealities.com/docs/ship/app-submission), [simulator](https://hub.evenrealities.com/docs/test/simulator)) |
-| Category / search tags | Productivity? / "assistant, voice, bots" | The portal asks for category and tags ([videos](https://hub.evenrealities.com/docs/learn/videos)); the allowed values aren't in the docs I read. Unverified. |
-| Privacy policy | docs/privacy.md (draft) — needs a public URL. Names every backend domain: api.x.ai (direct), the CMDLAB forwarder (zero retention, Cloudflare-hosted), and bud-feedback + Turnstile (feedback, the one thing kept, as a private GitHub issue). |
-| Support / Donate | Phone page header has a yellow **Donate** pill (same style as Wondereye) opening https://www.paypal.com/donate/?hosted_button_id=Z5SDZULELYGNS outside BUD. Support link for the portal, if it asks: the same PayPal URL, or the bud-feedback `/feedback` page for help. | Wondereye uses the same PayPal button |
-| Feedback | Phone page **More → Send feedback** (Bug / Idea / Other, title ≤80, message ≤2000, Turnstile). Copy: "Feedback is the one thing BUD keeps: it is saved as a private GitHub issue for the BUD developer." No glasses menu item (Wondereye has none). | | must cover every permission; backend domains documented and traceable to the developer ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
+| Field | Text | Chars | Limit (source) |
+|---|---|---|---|
+| Name | BUD | 3 | ≤20, no "Even" ([packaging](https://hub.evenrealities.com/docs/ship/packaging)). Same as app.json and the glasses header. |
+| Tagline | Bots Up Display | 15 | not documented |
+| Description | below | 773 | not documented; "no keyword stuffing" ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
+| Release notes (en) | below | 151 (1 line) | "1-3 lines per locale"; first version describes what the app does ([submission](https://hub.evenrealities.com/docs/ship/app-submission#release-notes)) |
+| Permission: network | in app.json | 285 | desc 1–300 ([packaging](https://hub.evenrealities.com/docs/ship/packaging)) |
+| Permission: g2-microphone | in app.json | 128 | desc 1–300 |
+| Category | Productivity | – | values not documented; pick in the form |
+| Search tags | assistant, voice, bots, productivity | – | not documented |
+| Privacy policy URL | https://bud-feedback.admin2655.workers.dev/privacy | – | needs deploy (gate) |
+| Terms URL | https://bud-feedback.admin2655.workers.dev/terms | – | needs deploy (gate) |
+| Version / package | 1.0.3 / tech.cmdlab.bud | – | semver, reverse-domain ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
 
-Hardware facts used in copy: the G2 has a 4-mic array (16 kHz PCM) and no camera or speaker; R1 has the same gestures ([overview](https://hub.evenrealities.com/docs)).
+### Description (773 characters)
+    Talk to your Grok Bots from your G2. Pick a bot on your glasses, speak a task, check the text, and send. Replies arrive as Grok Bot notifications. Approvals stay in the Grok Bot app.
 
-## Open listing risks for CMDLAB
-1. **Name.** "BUD" takes "Grok" out of the app name. The description still says "Grok Bots" and "Grok Bot app" to explain what it connects to (no logo). Even rejects impersonation and unauthorized brand logos ([submission](https://hub.evenrealities.com/docs/ship/app-submission)); confirm CMDLAB is fine naming Grok Bot in the description.
-   Name search (Oct 10, 2026): no app named BUD found on Even Hub or in G2 GitHub lists ([even-hub topic](https://github.com/topics/even-hub), [even-realities-g2 topic](https://github.com/topics/even-realities-g2), [awesome-even-realities-g2](https://github.com/pangoleen/awesome-even-realities-g2), [launch coverage](https://www.smartwearables.io/news/even-realities-g2-even-hub-50-apps-2026)). The Even Hub catalog isn't publicly browsable, so this isn't conclusive. Nearest same-space name: **Bud.app, "Your AI Worker"** (an AI agent product, not on G2) ([bud.app](https://bud.app/)). Not an Even Hub conflict, but it's an AI-agent brand with the same word; the tagline helps tell them apart.
-2. **Bring-your-own setup in a public store.** The app needs the user's own xAI API key and one hub bot's webhook URL and sender key (1.0.2 hub mode; direct per-bot webhooks are optional). Reviewers install it as beta testers ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) and will see the setup screen; they need test webhook credentials or a clear note. A Beta group may fit better than Released.
-3. **Content & safety:** no medical/financial advice or emergency routing in the app itself ([submission](https://hub.evenrealities.com/docs/ship/app-submission)). Bot replies are user-generated by CMDLAB's own bots.
-4. **Forwarder.** Sends go through CMDLAB's zero-retention forwarder (bud-forward) because api2.cursor.sh blocks WebView CORS. It must be deployed (gate) before the build works. 1.0.2 needs the updated bud-forward (optional `target`, kind `sync`) deployed before the 1.0.2 build ships: the 1.0.0 forwarder rejects `sync` and drops `target`. The zero-retention copy in the description, permission text and privacy policy matches `forwarder/wrangler.jsonc` and the code; keep them in sync if the forwarder changes.
-5. **Feedback is kept.** Keep "zero retention" scoped to the forwarder and task sending everywhere; feedback is the stated exception (description, permission text, privacy draft, phone page all say so).
-6. **Claims wording.** "Stores or logs nothing" refers to the forwarder. Cloudflare still carries the traffic as host (privacy draft says so). Don't strengthen it to "nobody can see it".
+    Get started
+    1. Get an xAI API key at console.x.ai and paste it in BUD on your phone.
+    2. Add the BUD hub bot to Grok Bot: https://x.ai/bot/915uZ58K2YkQhevdmxt74, then send it "Set up BUD for my glasses".
+    3. Paste the webhook URL and sender key from its routine panel, then the code it sends back.
+    4. On your glasses, pick a bot, speak, and send.
+
+    Requires a Grok Bot account and your own xAI API key (paid, billed by xAI for speech-to-text).
+
+    Zero retention: BUD's forwarder passes your request to your bot and stores or logs nothing. Your keys stay on your phone.
+
+    Not affiliated with xAI.
+
+### Release notes, en (151 characters)
+    Talk to your Grok Bots from your G2: pick a bot, speak a task, and send it. Set up once with the BUD hub bot; replies arrive as Grok Bot notifications.
+
+## Wording decisions
+- **"Grok Bot"** is named only to say what BUD works with (nominative use): "your Grok Bots", "Grok Bot
+  notifications", "Grok Bot app". No logo, not in the app name, and the description ends with "Not affiliated
+  with xAI." Nothing says BUD is made or endorsed by xAI.
+- **No audio-output claims** (the G2 has no speaker): replies are "notifications", never "spoken" or "heard".
+- **Hub bot template link** (https://x.ai/bot/915uZ58K2YkQhevdmxt74, "BUD for Even Realities G2 by CMDLAB") is step 2, so a new user's Grok Bot gets the routine instructions from the template.
+- **Generic bot names only** (Research bot, Inbox bot, ...), in copy and screenshots.
+- **Costs are explicit:** a Grok Bot account and the user's own paid xAI API key.
+
+## Visual assets
+| Asset | File | Format | Rule |
+|---|---|---|---|
+| Screenshot 1, bot list | store/screenshots/1-bot-list.png | PNG 576x288 RGBA | captured with the simulator's screenshot function ([submission](https://hub.evenrealities.com/docs/ship/app-submission)); 576x288 is the G2 canvas ([FAQ](https://hub.evenrealities.com/docs/reference/faq)) |
+| Screenshot 2, listening | store/screenshots/2-listening.png | same | |
+| Screenshot 3, transcript | store/screenshots/3-transcript.png | same | |
+| Screenshot 4, sent | store/screenshots/4-sent.png | same | |
+| Screenshot 5, first run on the glasses | store/screenshots/5-setup-on-glasses.png | same | shows the "finish setup on your phone" screen |
+| Background / cover candidate | store/cover/cover-576x288.png | PNG 576x288, 8-bit greyscale | "foreground and background supplied", "monochrome / greyscale only" ([submission](https://hub.evenrealities.com/docs/ship/app-submission)); exact spec not documented |
+| Icon | drawn in the portal's 24x24 editor | 1-bit, 2x2 blocks | [design guidelines](https://hub.evenrealities.com/docs/build/design-guidelines); see docs/icon.md |
+
+Phone-page screenshots are not included: Even asks for screenshots that "match what the app actually renders on
+device", captured via the simulator, which renders the glasses only.
+
+Screenshots are from the 1.0.3 code in the simulator (`fake=hub` with a generic six-name BUD1 code), Oct 10, 2026.

@@ -2,6 +2,7 @@
 // untouched: this Worker has a KV namespace (hashed rate-limit counters + 24 h dedupe hashes) and
 // files GitHub issues. Logs are off; the only console output is a reason code on rejects.
 import { handleFeedback, LOOPBACK_ORIGIN, type Env } from './feedback';
+import { LEGAL_CSP, PRIVACY_HTML, TERMS_HTML } from './legal';
 import { FEEDBACK_PAGE_HTML, FRAME_CSP, PAGE_CSP, VERIFY_FRAME_HTML, feedbackPageJs, verifyFrameJs } from './pages';
 
 const BASE = { 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
@@ -38,6 +39,10 @@ export async function route(req: Request, env: Env): Promise<Response> {
       return text(FEEDBACK_PAGE_HTML, 'text/html; charset=utf-8', { 'Content-Security-Policy': PAGE_CSP, 'X-Frame-Options': 'DENY', 'Cache-Control': 'public, max-age=300', 'X-Robots-Tag': 'noindex' });
     case '/feedback.js':
       return text(feedbackPageJs(env.TURNSTILE_SITEKEY ?? ''), 'text/javascript; charset=utf-8', { 'Cache-Control': 'public, max-age=300' });
+    case '/privacy':
+    case '/terms':
+      // Public, indexable legal pages for the Even Hub listing (generated from docs/privacy.md, docs/terms.md).
+      return text(url.pathname === '/privacy' ? PRIVACY_HTML : TERMS_HTML, 'text/html; charset=utf-8', { 'Content-Security-Policy': LEGAL_CSP, 'X-Frame-Options': 'DENY', 'Cache-Control': 'public, max-age=3600' });
     case '/health':
       return text('ok', 'text/plain');
     default:

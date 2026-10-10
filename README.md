@@ -45,7 +45,8 @@ A failed send shows a short reason; press retries.
 First run shows **Setup 1/2: Speech key → Setup 2/2: Connect your hub bot → Setup done**; the glasses say
 "Open BUD on your phone to finish setup" with the missing steps until then.
 - **Speech to text:** **Paste key** reads the clipboard and saves the xAI key (pasting into the field saves too).
-- **Connect your hub bot:** **Copy** the message "Set up BUD for my glasses" for the hub bot, then one
+- **Connect your hub bot:** **Get the BUD hub bot** opens the public Grok Bot template (https://x.ai/bot/915uZ58K2YkQhevdmxt74) like Donate
+  (`https://x.ai` is whitelisted for the link literal). Then **Copy** the message "Set up BUD for my glasses" for the hub bot, then one
   **Paste setup** box takes the hub's webhook URL, sender key and BUD1 bot list code in any order, in one paste or
   several (`app/src/setup.ts` tells them apart by pattern). A **Paste** button reads the clipboard when the WebView
   allows it, else long-press → Paste. A checklist shows Webhook URL / Sender key / Connection test / Bot list. When
