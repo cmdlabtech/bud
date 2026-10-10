@@ -14,11 +14,13 @@ The user's side, end to end. The phone page walks through the same order with a 
    that will be the hub (any bot that can see and message its teammates, for example a general "Assistant bot").
 3. **The hub sets itself up (one reply).** The first time, the hub creates a webhook routine named
    **"BUD hub inbox"** with the saved prompt below (Grok Bot shows its normal routine card) and replies with
-   one short message:
-   > Done. In the "BUD hub inbox" routine panel, copy the webhook URL, paste it in BUD (Setup 2/2, Paste),
-   > then copy the sender key and paste it too. BUD tests the connection by itself and I'll send your bot list code.
-4. **Paste URL and key (Setup 2/2).** Two copies from the routine panel, two taps on **Paste** (or paste both at
-   once). The checklist ticks Webhook URL and Sender key, BUD saves the hub and sends the test right away
+   one short message with two links that open the routine's fields (from the routine's status line):
+   > Done. Copy the [Webhook URL] and paste it in BUD (Setup 2/2, Paste), then copy the [Webhook key] and paste
+   > it too. BUD tests the connection by itself and I'll send your bot list code.
+   If the links aren't shown, the same two fields are on the "BUD hub inbox" routine panel (the bot's info pane,
+   under Routines).
+4. **Paste URL and key (Setup 2/2).** Two copies (from the links or the routine panel), two taps on **Paste**
+   (or paste both at once). The checklist ticks Webhook URL and Sender key, BUD saves the hub and sends the test right away
    (kind "sync"), and shows "Connected".
 5. **The code arrives (one reply).** The routine answers the sync with a message that is **only the code**, so
    copying the whole message copies exactly the code. Copy it, tap **Paste**. BUD shows the names and
@@ -28,7 +30,7 @@ The user's side, end to end. The phone page walks through the same order with a 
 Resync any time bots are added or renamed: **Resync bot list** on the phone page, or tell the hub "resync bots".
 The code holds bot display names only. It never holds a webhook URL or key, it lives on the phone, and BUD
 refuses any code that contains something URL- or key-like. A bot can't see its own routine's webhook URL or
-sender key, so those two always come from the routine panel.
+sender key, so those two always come from the routine's own fields (the links above or its panel).
 
 ## What the hub says in chat ("set up BUD for my glasses", "set up my glasses")
 - No "BUD hub inbox" routine yet: create it (webhook trigger, the saved prompt below), then send the one message
