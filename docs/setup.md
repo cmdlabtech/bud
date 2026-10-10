@@ -48,7 +48,13 @@ Then check that Workers & Pages → bud-forward → Settings → Observability s
 No secrets to set. Rollback: `npx wrangler rollback` (previous version) or `npx wrangler delete bud-forward`
 (sends then fail with a network error; nothing is lost because nothing is stored).
 
-## 1b. Forwarder update for 1.0.2 — GATE (deploy before the 1.0.2 build ships)
+## 1b. Forwarder update for 1.0.2 — DEPLOYED Oct 10, 2026, 2:47 PM ET (version f4556fb6-bf9f-4da5-b33b-6de1dfeded5d)
+Verified after deploy: /v1/health ok; preflight 204 with `Access-Control-Allow-Origin: *`; non-cursor URL → 400
+`bad_webhook_url`; kind `sync` with a 25-char target → 400 `bad_target` (so `sync` passed the kind check and the
+target check is live), control-char and numeric targets → `bad_target`, unknown kind → `bad_body`. No request
+reached a webhook (every probe failed validation first). Workers Observability: 0 log events for bud-forward.
+Rollback (previous version, 1.0.0 forwarder): `cd forwarder && npx wrangler rollback f5604034-b049-4ea2-99d0-0d386431e4ec`
+(1.0.2 hub sends would then lose `target` and syncs would fail with 400).
 bud-forward now accepts kind `sync` and an optional `target` (trimmed, 1–24 characters, no control characters,
 else 400 `bad_target`), passed on only when present. Still no storage, no logs. The live 1.0.0 forwarder
 rejects `sync` (400) and rebuilds the body without `target`, so hub sends would reach the hub with no target.
