@@ -1,5 +1,7 @@
 # BUD — Bots Up Display
 
+[![Donate](https://img.shields.io/badge/Donate-PayPal-yellow.svg)](https://www.paypal.com/donate/?hosted_button_id=Z5SDZULELYGNS)
+
 **BUD (Bots Up Display)** lets you talk to your Grok Bots from Even G2 glasses (touchpads or R1 ring):
 pick a bot, speak a task, and BUD sends it. **Hub mode (1.0.2):** connect one hub bot and every teammate shows up
 on the glasses by name; the hub hands each task to the named bot (docs/hub-inbox.md). Replies and alerts come from Grok Bot's own phone
