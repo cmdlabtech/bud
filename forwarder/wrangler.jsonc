@@ -1,0 +1,41 @@
+{
+  // BUD forwarder (zero retention). Deploying needs CMDLAB's "approve deploy".
+  // Recommended name: bud-forward (new Worker; bud-relay is retired separately, see retire/).
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "bud-forward",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "workers_dev": true,
+  "preview_urls": false,
+
+  // --- Zero retention -------------------------------------------------------------------
+  // No storage of any kind: no kv_namespaces, durable_objects, d1_databases, r2_buckets,
+  // queues, analytics_engine_datasets, vectorize, hyperdrive, tail_consumers or cache.
+  // Workers Trace Events Logpush off (default false; set explicitly):
+  //   https://developers.cloudflare.com/workers/wrangler/configuration/  ("logpush")
+  "logpush": false,
+  // Workers Logs off. `enabled` is shorthand for logs.enabled ("when true, logs for the Worker
+  // are persisted"); head_sampling_rate 0 = no requests logged; invocation_logs false = no
+  // per-request invocation log; persist false = nothing stored in Cloudflare. Traces and
+  // Issues off too.
+  //   https://developers.cloudflare.com/workers/wrangler/configuration/#observability
+  //   https://developers.cloudflare.com/workers/observability/logs/workers-logs/
+  //   https://developers.cloudflare.com/workers/observability/opentelemetry-export/  ("persist")
+  "observability": {
+    "enabled": false,
+    "head_sampling_rate": 0,
+    "logs": { "enabled": false, "invocation_logs": false, "head_sampling_rate": 0, "persist": false },
+    "traces": { "enabled": false, "head_sampling_rate": 0, "persist": false },
+    "issues": { "enabled": false }
+  },
+
+  // --- Abuse limits ----------------------------------------------------------------------
+  // Workers Rate Limiting binding: counters per key, per Cloudflare location, window 10 or 60 s.
+  // Keys are SHA-256 hashes, so no URL, key, IP or text reaches the counter store.
+  //   https://developers.cloudflare.com/workers/runtime-apis/bindings/rate-limit/
+  "ratelimits": [
+    { "name": "RL_WEBHOOK", "namespace_id": "2655101", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_CLIENT", "namespace_id": "2655102", "simple": { "limit": 30, "period": 60 } }
+  ]
+  // No secrets and no vars. DEV_UPSTREAM exists only in wrangler.dev-test.jsonc.
+}

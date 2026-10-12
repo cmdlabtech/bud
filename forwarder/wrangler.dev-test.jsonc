@@ -1,0 +1,15 @@
+{
+  // LOCAL TESTING ONLY (wrangler dev): sends to a fake webhook on 127.0.0.1 instead of
+  // api2.cursor.sh. Never deploy this file. DEV_UPSTREAM is ignored unless it is a loopback
+  // http origin, so even a mistaken deploy cannot turn the forwarder into an open proxy.
+  "name": "bud-forward-devtest",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "logpush": false,
+  "observability": { "enabled": false },
+  "ratelimits": [
+    { "name": "RL_WEBHOOK", "namespace_id": "2655901", "simple": { "limit": 10, "period": 60 } },
+    { "name": "RL_CLIENT", "namespace_id": "2655902", "simple": { "limit": 30, "period": 60 } }
+  ],
+  "vars": { "DEV_UPSTREAM": "http://127.0.0.1:8899" }
+}

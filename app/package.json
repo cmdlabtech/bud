@@ -1,0 +1,20 @@
+{
+  "name": "bud-app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5174",
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "pack": "node ../scripts/pack.mjs"
+  },
+  "dependencies": { "@evenrealities/even_hub_sdk": "0.0.14" },
+  "devDependencies": {
+    "@evenrealities/evenhub-cli": "^0.1.14",
+    "@evenrealities/evenhub-simulator": "^0.9.5",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.10",
+    "vitest": "^3.2.7"
+  }
+}
