@@ -1,4 +1,4 @@
-# Store listing — BUD (Bots Up Display) 1.0.3, FINAL DRAFT for CMDLAB's review
+# Store listing — BUD (Bots Up Display) 1.0.4, FINAL DRAFT for CMDLAB's review
 
 Nothing is submitted. Sources: [submission](https://hub.evenrealities.com/docs/ship/app-submission) (updated
 2026-08-07), [packaging](https://hub.evenrealities.com/docs/ship/packaging), [design guidelines](https://hub.evenrealities.com/docs/build/design-guidelines),
@@ -14,15 +14,15 @@ are exact so they can be checked against the form.
 | Name | BUD | 3 | ≤20, no "Even" ([packaging](https://hub.evenrealities.com/docs/ship/packaging)). Same as app.json and the glasses header. |
 | Tagline | Bots Up Display | 15 | not documented |
 | Description | below | 773 | not documented; "no keyword stuffing" ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
-| Release notes (en) | below | 151 (1 line) | "1-3 lines per locale"; first version describes what the app does ([submission](https://hub.evenrealities.com/docs/ship/app-submission#release-notes)) |
-| Permission: network | in app.json | 285 | desc 1–300 ([packaging](https://hub.evenrealities.com/docs/ship/packaging)) |
+| Release notes (en) | below | 168 (1 line) | "1-3 lines per locale"; first version describes what the app does ([submission](https://hub.evenrealities.com/docs/ship/app-submission#release-notes)) |
+| Permission: network | in app.json | 284 | desc 1–300 ([packaging](https://hub.evenrealities.com/docs/ship/packaging)) |
 | Permission: g2-microphone | in app.json | 128 | desc 1–300 |
 | Category | Productivity | – | values not documented; pick in the form |
 | Search tags | assistant, voice, bots, productivity | – | not documented |
 | Privacy policy URL | https://bud-feedback.admin2655.workers.dev/privacy | – | live (bud-feedback 72e45c28) |
 | Terms URL | https://bud-feedback.admin2655.workers.dev/terms | – | live (bud-feedback 72e45c28) |
 | Contact email (privacy/terms) | contact@cmdlab.tech | – | public contact on /privacy and /terms |
-| Version / package | 1.0.3 / tech.cmdlab.bud | – | semver, reverse-domain ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
+| Version / package | 1.0.4 / tech.cmdlab.bud | – | semver, reverse-domain ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
 
 ### Description (773 characters)
     Talk to your Grok Bots from your G2. Pick a bot on your glasses, speak a task, check the text, and send. Replies arrive as Grok Bot notifications. Approvals stay in the Grok Bot app.
@@ -39,8 +39,8 @@ are exact so they can be checked against the form.
 
     Not affiliated with xAI.
 
-### Release notes, en (151 characters)
-    Talk to your Grok Bots from your G2: pick a bot, speak a task, and send it. Set up once with the BUD hub bot; replies arrive as Grok Bot notifications.
+### Release notes, en (168 characters)
+    Get the BUD hub bot opens https://x.ai/bot/915uZ58K2YkQhevdmxt74. If the tap stays in the Even app, copy that https address into your phone's browser, then add the bot.
 
 ## Wording decisions
 - **"Grok Bot"** is named only to say what BUD works with (nominative use): "your Grok Bots", "Grok Bot

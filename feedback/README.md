@@ -1,6 +1,6 @@
 # bud-feedback
 
-Feedback for BUD: `POST /api/feedback` files a private GitHub issue in cmdlabtech/bud (labels `feedback`,
+Feedback for BUD: `POST /api/feedback` files a public GitHub issue in cmdlabtech/bud (labels `feedback`,
 `needs-triage`, `source:app|web`). A port of Wondereye's /api/feedback, in its own Worker so bud-forward stays
 zero-retention and binding-free. **Feedback is the one thing BUD keeps.**
 

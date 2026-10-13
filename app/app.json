@@ -1,11 +1,11 @@
 {
   "package_id": "tech.cmdlab.bud",
   "edition": "202601",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "min_sdk_version": "0.0.14",
   "name": "BUD",
   "tagline": "Bots Up Display",
-  "description": "BUD (Bots Up Display) lets you talk to your Grok Bots from your G2: pick a bot, speak a task, check the text, and send. Replies arrive as Grok Bot notifications. Approvals stay in the Grok Bot app. Requires a Grok Bot account (with the BUD hub bot) and your own paid xAI API key. Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing. Your keys stay on your phone. The only thing BUD keeps is feedback you choose to send from the phone page, saved as a private GitHub issue for the developer. Not affiliated with xAI.",
+  "description": "BUD (Bots Up Display) lets you talk to your Grok Bots from your G2: pick a bot, speak a task, check the text, and send. Replies arrive as Grok Bot notifications. Approvals stay in the Grok Bot app. Requires a Grok Bot account (with the BUD hub bot) and your own paid xAI API key. Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing. Your keys stay on your phone. The only thing BUD keeps is feedback you choose to send from the phone page, saved as a public GitHub issue for the developer. Not affiliated with xAI.",
   "author": "cmdlabtech",
   "supported_languages": [
     "en"
@@ -13,7 +13,7 @@
   "permissions": [
     {
       "name": "network",
-      "desc": "Voice goes directly to xAI to become text. Task text, bot name, webhook URL and sender key go to BUD's zero-retention forwarder, which passes them to your bot and stores nothing. Feedback you choose to send goes to BUD's separate feedback service and is kept as a private GitHub issue.",
+      "desc": "Voice goes directly to xAI to become text. Task text, bot name, webhook URL and sender key go to BUD's zero-retention forwarder, which passes them to your bot and stores nothing. Feedback you choose to send goes to BUD's separate feedback service and is kept as a public GitHub issue.",
       "whitelist": [
         "https://api.x.ai",
         "https://bud-forward.admin2655.workers.dev",

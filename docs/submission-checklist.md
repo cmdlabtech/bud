@@ -30,7 +30,7 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 - ✅ package_id `tech.cmdlab.bud` (valid format). ⏳ availability: `evenhub pack ... -c` contacts Even (run at gate time)
 - ✅ edition 202601 · name "BUD" 3 chars, no "Even" · version 1.0.3 · min_sdk_version 0.0.14 · CLI stamped min_app_version 2.2.9
 - ✅ entrypoint index.html exists in the build folder (pack succeeded)
-- ✅ permissions are objects with name+desc (network desc 285/300 chars); network whitelist is `https://api.x.ai`, `https://bud-forward.admin2655.workers.dev`, `https://bud-feedback.admin2655.workers.dev`, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai` (exact origins, no wildcards; pack fails if it differs from FORWARDER_URL/FEEDBACK_URL + Turnstile + PayPal + xAI console; the last two are link-out literals, whitelisted as in Wondereye)
+- ✅ permissions are objects with name+desc (network desc 284/300 chars); network whitelist is `https://api.x.ai`, `https://bud-forward.admin2655.workers.dev`, `https://bud-feedback.admin2655.workers.dev`, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai`, `https://x.ai` (exact origins, no wildcards; pack fails if it differs from FORWARDER_URL/FEEDBACK_URL + Turnstile + PayPal + xAI console + the hub bot template origin; the last three are link-out literals, whitelisted as in Wondereye)
 - ✅ every permission is used: network (xAI STT + forwarder POST + feedback POST/verify frame + Donate link literal), g2-microphone (`audioControl(true, AudioInputSource.Glasses)`)
 - ✅ no secrets in the bundle ([packaging](https://hub.evenrealities.com/docs/ship/packaging) "Don't commit your API key"); scripts/check-ehpk-urls.mjs passes on the build and fails on a dev build (self-test)
 - ⏳ changelog/release notes text: docs/store-listing.md
@@ -46,7 +46,7 @@ Status: ✅ done and verified locally · ⏳ needs a gate or CMDLAB · ❓ not v
 ## Privacy
 - ✅ docs/privacy.md and docs/terms.md live at https://bud-feedback.admin2655.workers.dev/privacy and /terms (contact@cmdlab.tech); it covers network + g2-microphone, phone-only key storage, and names xAI, the CMDLAB forwarder (zero retention, Cloudflare-hosted) and Grok Bot; zero-retention copy matches forwarder/wrangler.jsonc
 
-- ⏳ privacy draft also covers feedback (the one thing kept: private GitHub issue, hashed anti-spam counters ≤1 day), Turnstile and the PayPal link; zero-retention copy is scoped to the forwarder
+- ⏳ privacy draft also covers feedback (the one thing kept: public GitHub issue, hashed anti-spam counters ≤1 day), Turnstile and the PayPal link; zero-retention copy is scoped to the forwarder
 - ✅ bud-feedback deployed Oct 10, 2026 (docs/setup.md step 2b); ⏳ one real test issue through the form (needs a human for the Turnstile checkbox)
 
 ## First run (no black screens)
