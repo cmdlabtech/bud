@@ -4,8 +4,8 @@
 // FORWARDER_URL (build setting) is the zero-retention forwarder origin (forwarder/).
 // FEEDBACK_URL is the separate feedback Worker (feedback/), the one thing BUD keeps.
 // The network whitelist in app/app.json must be exactly [xAI, forwarder, feedback,
-// Turnstile, PayPal, xAI console] (the last two as in Wondereye: Turnstile runs in the feedback frame, and the
-// PayPal Donate and xAI console key links are URL literals Even's scanner checks); the build fails otherwise.
+// Turnstile, PayPal, xAI console, https://x.ai] (the last three as in Wondereye: Turnstile runs in the feedback frame, and the
+// PayPal Donate, xAI console key, and hub bot template links are URL literals Even's scanner checks); the build fails otherwise.
 // No keys are built in: the user enters them on the phone page and they stay on the phone.
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readFileSync, rmSync, copyFileSync } from 'node:fs';

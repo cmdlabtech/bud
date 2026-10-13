@@ -234,6 +234,10 @@ export function initFeedbackForm(opts: FeedbackOptions): void {
 
 // Same as Wondereye's initExternalLinks: the Even WebView may not follow target="_blank", so try
 // window.open first and only cancel the native navigation if that worked.
+// The hub bot template is not in this set. @evenrealities/even_hub_sdk 0.0.14 and 0.0.16
+// EvenAppMethod has no external-open / open-URL method, and Even's FAQ says there is no
+// window.open(url, '_system') equivalent (hub.evenrealities.com/docs/reference/faq). That link
+// stays a normal target="_blank" https anchor so the WebView does not swallow the tap.
 export function initExternalLinks(root: ParentNode = document): void {
   root.querySelectorAll<HTMLAnchorElement>('a[data-external]').forEach(link => {
     link.addEventListener('click', e => {

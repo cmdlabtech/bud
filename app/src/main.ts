@@ -1,5 +1,5 @@
 import { AudioInputSource, EvenAppBridge, waitForEvenAppBridge } from '@evenrealities/even_hub_sdk';
-import { APP_VERSION, FORWARDER_URL, MIC_STUB, SENT_SCREEN_MS } from './config';
+import { APP_VERSION, FORWARDER_URL, HUB_BOT_URL, MIC_STUB, SENT_SCREEN_MS } from './config';
 import { initExternalLinks, initFeedbackForm } from './feedback';
 import { Controller } from './controller';
 import { toGesture } from './gestures';
@@ -246,6 +246,10 @@ async function main() {
   $('copyAsk').addEventListener('click', async () => {
     try { await navigator.clipboard.writeText('Set up BUD for my glasses'); say('hubMsg', 'Copied. Paste it to your hub bot in Grok Bot.', 'ok'); }
     catch { say('hubMsg', 'Type "Set up BUD for my glasses" to your hub bot in Grok Bot.', ''); }
+  });
+  $('copyHubLink').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(HUB_BOT_URL); say('hubMsg', 'Copied. Paste the https link into your phone\'s browser, then add the bot.', 'ok'); }
+    catch { say('hubMsg', `Copy this into your phone's browser: ${HUB_BOT_URL}`, ''); }
   });
   $('hubSave').addEventListener('click', async () => {
     const url = $<HTMLInputElement>('hubUrl').value.trim();

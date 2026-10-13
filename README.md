@@ -47,8 +47,13 @@ A failed send shows a short reason; press retries.
 First run shows **Setup 1/2: Speech key → Setup 2/2: Connect your hub bot → Setup done**; the glasses say
 "Open BUD on your phone to finish setup" with the missing steps until then.
 - **Speech to text:** **Paste key** reads the clipboard and saves the xAI key (pasting into the field saves too).
-- **Connect your hub bot:** **Get the BUD hub bot** opens the public Grok Bot template (https://x.ai/bot/915uZ58K2YkQhevdmxt74) like Donate
-  (`https://x.ai` is whitelisted for the link literal). Then **Copy** the message "Set up BUD for my glasses" for the hub bot, then one
+- **Connect your hub bot:** **Get the BUD hub bot** is a normal `target="_blank"` link to the public Grok Bot template
+  (https://x.ai/bot/915uZ58K2YkQhevdmxt74). The page also shows that https address, with **Copy link**.
+  `@evenrealities/even_hub_sdk` 0.0.14 and 0.0.16 have no external-open method (`EvenAppMethod` is storage, location,
+  photos, glasses UI, mic, IMU, and shutdown only), and the Even FAQ says there is still no `window.open(url, '_system')`
+  (https://hub.evenrealities.com/docs/reference/faq), so this link is not routed through `window.open`.
+  `https://x.ai` is whitelisted for the link literal. If the tap stays inside the Even app, paste the https address
+  into the phone's browser. Then **Copy** the message "Set up BUD for my glasses" for the hub bot, then one
   **Paste setup** box takes the hub's webhook URL, sender key and BUD1 bot list code in any order, in one paste or
   several (`app/src/setup.ts` tells them apart by pattern). A **Paste** button reads the clipboard when the WebView
   allows it, else long-press → Paste. A checklist shows Webhook URL / Sender key / Connection test / Bot list. When
@@ -83,7 +88,7 @@ forwarder. The page shows the zero-retention note next to the key fields.
 |---|---|---|
 | App name | BUD (tagline "Bots Up Display") | app/app.json |
 | Package id | tech.cmdlab.bud | app/app.json (permanent once uploaded) |
-| Network whitelist | `https://api.x.ai`, forwarder, feedback, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai` | app/app.json (pack checks it equals these six) |
+| Network whitelist | `https://api.x.ai`, forwarder, feedback, `https://challenges.cloudflare.com`, `https://www.paypal.com`, `https://console.x.ai`, `https://x.ai` | app/app.json (pack checks it equals these seven) |
 | Feedback | `FEEDBACK_URL`, default `https://bud-feedback.admin2655.workers.dev` | scripts/pack.mjs → VITE_FEEDBACK_URL |
 | Feedback limits | 3/hour and 10/day per hashed IP, 50/day total, 24 h duplicate drop, title 80, message 2,000 | feedback/src/feedback.ts |
 | Forwarder | `FORWARDER_URL`, default `https://bud-forward.admin2655.workers.dev` | scripts/pack.mjs → VITE_FORWARDER_URL |
@@ -119,7 +124,7 @@ VITE_FEEDBACK_URL=http://127.0.0.1:8787 npm run dev:app
 FORWARDER_URL=https://bud-forward.admin2655.workers.dev FEEDBACK_URL=https://bud-feedback.admin2655.workers.dev npm run pack
 ```
 Builds into `../builds/`. Fails unless the app.json whitelist is exactly xAI, the forwarder, the feedback origin,
-Turnstile, PayPal and the xAI console, then runs
+Turnstile, PayPal, the xAI console and `https://x.ai`, then runs
 `scripts/check-ehpk-urls.mjs`, which fails on any URL literal outside the whitelist, on secrets (xAI keys, bearer
 literals, private keys, a baked-in webhook URL), on a direct webhook origin, and on dev-only code (fake network,
 localhost, DEV_UPSTREAM), and on any of CMDLAB's personal bot names (scripts/private-names.mjs). `npm test` also

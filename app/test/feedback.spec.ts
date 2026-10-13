@@ -68,14 +68,26 @@ describe('phone page', () => {
     expect(html).toMatch(/href="https:\/\/console\.x\.ai\/team\/default\/api-keys" target="_blank" rel="noopener noreferrer" data-external>Get an xAI API key<\/a>/);
     expect(html).toContain('it stays on this phone.');
   });
-  it('has the "Get the BUD hub bot" link (public Grok Bot template) opened like Donate', () => {
+  it('has the "Get the BUD hub bot" https template as a normal target=_blank link', () => {
     expect(HUB_BOT_URL).toBe('https://x.ai/bot/915uZ58K2YkQhevdmxt74');
-    expect(html).toMatch(/href="https:\/\/x\.ai\/bot\/915uZ58K2YkQhevdmxt74" target="_blank" rel="noopener noreferrer" data-external>Get the BUD hub bot<\/a>/);
+    expect(html).not.toMatch(/href=["']grokbot:/);
+    expect(html).toContain('>https://x.ai/bot/915uZ58K2YkQhevdmxt74</a>');
+    expect(html).toMatch(/id="hubBotLink" href="https:\/\/x\.ai\/bot\/915uZ58K2YkQhevdmxt74" target="_blank" rel="noopener noreferrer">Get the BUD hub bot<\/a>/);
+    expect(html).not.toMatch(/id="hubBotLink"[^>]*data-external/);
+    expect(html).toContain('id="copyHubLink"');
   });
   it('whitelist covers every origin, and zero-retention copy stays scoped to the forwarder', () => {
     const wl = manifest.permissions.find((p: any) => p.name === 'network').whitelist;
+    const net = manifest.permissions.find((p: any) => p.name === 'network');
     expect(wl).toEqual(['https://api.x.ai', 'https://bud-forward.admin2655.workers.dev', 'https://bud-feedback.admin2655.workers.dev', 'https://challenges.cloudflare.com', 'https://www.paypal.com', 'https://console.x.ai', 'https://x.ai']);
+    expect(manifest.version).toBe('1.0.4');
     expect(manifest.description).toContain("Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing.");
     expect(manifest.description).toContain('The only thing BUD keeps is feedback');
+    expect(manifest.description).toContain('public GitHub issue');
+    expect(manifest.description).not.toContain('private GitHub issue');
+    expect(net.desc).toContain('public GitHub issue');
+    expect(net.desc).not.toContain('private GitHub issue');
+    expect(net.desc.length).toBeGreaterThan(0);
+    expect(net.desc.length).toBeLessThanOrEqual(300);
   });
 });

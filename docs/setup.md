@@ -141,7 +141,7 @@ the forwarder (HTTPS), by CMDLAB's design.
 First run shows a progress banner: **Setup 1/2: Speech key** → **Setup 2/2: Connect your hub bot** → **Setup done**.
 The glasses meanwhile say "Open BUD on your phone to finish setup" and list the missing steps.
 1. Tap **Paste key** for the xAI API key (link "Get an xAI API key" opens the xAI console). Saves by itself.
-2. Tap **Get the BUD hub bot** (public Grok Bot template, https://x.ai/bot/915uZ58K2YkQhevdmxt74), add it in Grok Bot, then tap **Copy**
+2. Tap **Get the BUD hub bot** (public Grok Bot template, https://x.ai/bot/915uZ58K2YkQhevdmxt74). It is a normal `target="_blank"` link: the Even SDK has no external-open method. If the tap stays inside the Even app, tap **Copy link** and paste that https address into the phone's browser. Add it in Grok Bot, then tap **Copy**
    ("Set up BUD for my glasses") and send it to the hub bot.
 3. Paste the routine's webhook URL and sender key into the one **Paste setup** box, by the **Paste** button
    (reads the clipboard if the WebView allows it) or by long-press → Paste. Any order, one paste or several;

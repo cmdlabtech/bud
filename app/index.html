@@ -34,7 +34,8 @@
   ul.checklist li.busy::before { content: "… "; } ul.checklist li.error { color: #ff8a80; } ul.checklist li.error::before { content: "✗ "; }
   details.manual { margin-top: 12px; color: #9fb5a8; } details.manual summary { font-size: 14px; }
   ul.names { margin: 8px 0 0; padding-left: 20px; color: #e8f5ec; } ul.names li { margin: 2px 0; }
-  a.ext-link { color: #3ddc84; text-decoration: underline; -webkit-tap-highlight-color: transparent; }
+  a.ext-link { color: #3ddc84; text-decoration: underline; -webkit-tap-highlight-color: transparent; overflow-wrap: anywhere; }
+  .hub-url { word-break: break-all; }
   /* Header with Donate pill (same style as Wondereye's .donate-btn) */
   .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .donate-btn { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; background: #FFDD00; border-radius: 999px; text-decoration: none; color: #000; white-space: nowrap; -webkit-tap-highlight-color: transparent; }
@@ -93,7 +94,10 @@
   <div class="card" id="hubCard">
     <h2><span class="stepno">2</span> Connect your hub bot</h2>
     <p>One bot (your "hub") brings your whole bot list.</p>
-    <p><a class="ext-link" id="hubBotLink" href="https://x.ai/bot/915uZ58K2YkQhevdmxt74" target="_blank" rel="noopener noreferrer" data-external>Get the BUD hub bot</a> &middot; add it in Grok Bot, then send it: <strong>Set up BUD for my glasses</strong> <button class="ghost small" id="copyAsk">Copy</button></p>
+    <p><a class="ext-link" id="hubBotLink" href="https://x.ai/bot/915uZ58K2YkQhevdmxt74" target="_blank" rel="noopener noreferrer">Get the BUD hub bot</a></p>
+    <p class="meta hub-url"><a class="ext-link" href="https://x.ai/bot/915uZ58K2YkQhevdmxt74" target="_blank" rel="noopener noreferrer">https://x.ai/bot/915uZ58K2YkQhevdmxt74</a> <button class="ghost small" id="copyHubLink" type="button">Copy link</button></p>
+    <p class="meta">If the tap stays inside the Even app, copy that https address into your phone's browser, then add the bot.</p>
+    <p>Add it in Grok Bot, then send it: <strong>Set up BUD for my glasses</strong> <button class="ghost small" id="copyAsk" type="button">Copy</button></p>
     <p>Then paste here, in any order: the <strong>webhook URL</strong> and <strong>sender key</strong> from the routine panel, and the <strong>BUD1 code</strong> from the chat. One paste or several.</p>
     <textarea id="setupBox" class="code" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste here"></textarea>
     <div class="row" style="margin-top:10px"><button id="setupPaste">Paste</button><button class="ghost" id="setupClear">Clear box</button></div>

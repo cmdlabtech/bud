@@ -14,7 +14,7 @@ The user's side, end to end. The phone page walks through the same order with a 
 
 1. **Speech key (Setup 1/2).** On BUD's phone page tap **Get an xAI API key**, copy the key, come back, tap
    **Paste key**. It saves itself.
-2. **Add the hub and ask it (one message).** Tap **Get the BUD hub bot** (https://x.ai/bot/915uZ58K2YkQhevdmxt74), add it in Grok
+2. **Add the hub and ask it (one message).** Tap **Get the BUD hub bot** (https://x.ai/bot/915uZ58K2YkQhevdmxt74). If the Even app keeps the page inside its own browser, copy that https address into the phone's browser. Add it in Grok
    Bot, then tap **Copy** next to "Set up BUD for my glasses" and send that to it. (Or use your own bot with the
    saved prompt below.)
 3. **The hub sets itself up (one reply).** The first time, the hub creates a webhook routine named
