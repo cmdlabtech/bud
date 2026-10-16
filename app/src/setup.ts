@@ -1,5 +1,6 @@
 // One "Paste setup" box (1.0.2): the user pastes, in any order and in one or several pastes,
-// the hub routine's webhook URL and sender key (copied from the routine panel) and the BUD1 bot
+// the hub routine's webhook URL and sender key (copied from the routine's Webhook section in Grok Bot desktop: "POST to" and "key", or the
+// whole "header" line, "Authorization: Bearer <key>") and the BUD1 bot
 // list code (copied from the hub's chat reply). An xAI API key pasted here is recognized too.
 // Each item is told apart by its pattern; nothing here touches the network or storage.
 
@@ -13,7 +14,8 @@ export interface Detected { url?: string; key?: string; code?: string; xaiKey?: 
 export function detectSetup(raw: string): Detected {
   const text = String(raw ?? '');
   const out: Detected = { ignored: 0 };
-  let rest = text;
+  // The routine's "header" field is "Authorization: Bearer <key>": drop the labels so only the key is left.
+  let rest = text.replace(/\bAuthorization:\s*/gi, ' ').replace(/\bBearer\s+/gi, ' ');
   const url = rest.match(WEBHOOK_IN_TEXT);
   if (url) { out.url = url[0]; rest = rest.replace(url[0], ' '); }
   // Chat apps may wrap a long code across lines: also look with all whitespace removed.

@@ -80,7 +80,7 @@ describe('phone page', () => {
     const wl = manifest.permissions.find((p: any) => p.name === 'network').whitelist;
     const net = manifest.permissions.find((p: any) => p.name === 'network');
     expect(wl).toEqual(['https://api.x.ai', 'https://bud-forward.admin2655.workers.dev', 'https://bud-feedback.admin2655.workers.dev', 'https://challenges.cloudflare.com', 'https://www.paypal.com', 'https://console.x.ai', 'https://x.ai']);
-    expect(manifest.version).toBe('1.0.4');
+    expect(manifest.version).toBe('1.0.5');
     expect(manifest.description).toContain("Zero retention: BUD's forwarder passes your request straight to your bot and stores or logs nothing.");
     expect(manifest.description).toContain('The only thing BUD keeps is feedback');
     expect(manifest.description).toContain('public GitHub issue');
