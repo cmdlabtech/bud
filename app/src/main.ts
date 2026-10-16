@@ -130,7 +130,7 @@ async function main() {
     const key = typedKey || existing?.key || '';
     if (!name) return say('editMsg', 'Give the bot a name.', 'err');
     if (!validWebhookUrl(url)) return say('editMsg', 'That is not a Grok Bot webhook URL. It should look like api2.cursor.sh/automations/webhook/... (https).', 'err');
-    if (!validKey(key)) return say('editMsg', 'Paste the sender key from the routine panel.', 'err');
+    if (!validKey(key)) return say('editMsg', 'Paste the sender key (key, in the routine\'s Webhook section on Grok Bot desktop).', 'err');
     if (!existing && settings.bots.length >= 30) return say('editMsg', 'BUD holds up to 30 bots.', 'err');
     const bot: BotConfig = { id: existing?.id ?? newId(), name, url, key };
     const bots = existing ? settings.bots.map(x => (x.id === bot.id ? bot : x)) : [...settings.bots, bot];
@@ -207,12 +207,12 @@ async function main() {
     const key = pending.key ?? settings.hub?.key;
     let hubChanged = false;
     if (url && key && (url !== settings.hub?.url || key !== settings.hub?.key)) {
-      if (!validKey(key)) err = 'That sender key does not look right. Copy it again from the routine panel.';
+      if (!validKey(key)) err = 'That sender key does not look right. Copy key again from the BUD hub inbox routine\'s Webhook section (Grok Bot desktop).';
       else { next.hub = { url, key }; hubChanged = true; delete pending.url; delete pending.key; }
     } else if (url && key) { delete pending.url; delete pending.key; }
     if (names) {
       if (next.hub) next.hubBots = names;
-      else { err = 'Got the bot list. Now paste the webhook URL and sender key from the routine panel too.'; pendingNames = names; }
+      else { err = 'Got the bot list. Now paste POST to and key from the BUD hub inbox routine (Grok Bot desktop) too.'; pendingNames = names; }
     } else if (pendingNames && next.hub) { next.hubBots = pendingNames; pendingNames = null; }
     if (hubChanged || names || next.xaiKey !== settings.xaiKey || next.hubBots !== settings.hubBots) {
       if (hubChanged) { testState = 'todo'; testNote = ''; }
@@ -256,7 +256,7 @@ async function main() {
     const typed = $<HTMLInputElement>('hubKey').value.trim();
     $<HTMLInputElement>('hubKey').value = '';
     if (!validWebhookUrl(url)) return say('hubMsg', 'That is not a Grok Bot webhook URL. It should look like api2.cursor.sh/automations/webhook/... (https).', 'err');
-    if (!validKey(typed || settings.hub?.key || '')) return say('hubMsg', "Paste the sender key from the hub bot's routine panel.", 'err');
+    if (!validKey(typed || settings.hub?.key || '')) return say('hubMsg', "Paste the sender key (key, in the BUD hub inbox routine's Webhook section on Grok Bot desktop).", 'err');
     await useSetupText(`${url} ${typed || settings.hub?.key}`);
   });
   $('hubClear').addEventListener('click', async () => {
