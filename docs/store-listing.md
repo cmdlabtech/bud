@@ -1,4 +1,4 @@
-# Store listing — BUD (Bots Up Display) 1.0.5, FINAL DRAFT for CMDLAB's review
+# Store listing — BUD (Bots Up Display) 1.0.6, FINAL DRAFT for CMDLAB's review
 
 Nothing is submitted. Sources: [submission](https://hub.evenrealities.com/docs/ship/app-submission) (updated
 2026-08-07), [packaging](https://hub.evenrealities.com/docs/ship/packaging), [design guidelines](https://hub.evenrealities.com/docs/build/design-guidelines),
@@ -22,7 +22,7 @@ are exact so they can be checked against the form.
 | Privacy policy URL | https://bud-feedback.admin2655.workers.dev/privacy | – | live (bud-feedback 72e45c28) |
 | Terms URL | https://bud-feedback.admin2655.workers.dev/terms | – | live (bud-feedback 72e45c28) |
 | Contact email (privacy/terms) | contact@cmdlab.tech | – | public contact on /privacy and /terms |
-| Version / package | 1.0.5 / tech.cmdlab.bud | – | semver, reverse-domain ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
+| Version / package | 1.0.6 / tech.cmdlab.bud | – | semver, reverse-domain ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
 
 ### Description (773 characters)
     Talk to your Grok Bots from your G2. Pick a bot on your glasses, speak a task, check the text, and send. Replies arrive as Grok Bot notifications. Approvals stay in the Grok Bot app.
