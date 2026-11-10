@@ -1,6 +1,6 @@
 # BUD — Bots Up Display
 
-[![Donate](https://img.shields.io/badge/Donate-PayPal-yellow.svg)](https://www.paypal.com/donate/?hosted_button_id=Z5SDZULELYGNS)
+[![Donate with PayPal](https://img.shields.io/badge/Donate-PayPal-00457C?style=flat-square&logo=paypal&logoColor=white)](https://cmdlab.tech/donate)
 
 **BUD (Bots Up Display)** lets you talk to your Grok Bots from Even G2 glasses (touchpads or R1 ring):
 pick a bot, speak a task, and BUD sends it. **Hub mode (1.0.2):** connect one hub bot and every teammate shows up
