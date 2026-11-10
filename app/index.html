@@ -66,6 +66,7 @@
   .feedback-fallback { display: block; color: inherit; text-decoration: underline; opacity: 0.8; }
   #feedback-submit { display: block; width: 100%; margin-top: 8px; padding: 9px 12px; }
   #feedback-submit:disabled { opacity: 0.4; }
+  ol.steps { margin: 6px 0 8px; padding-left: 20px; } ol.steps li { margin: 3px 0; }
 </style>
 </head>
 <body>
@@ -98,7 +99,15 @@
     <p class="meta hub-url"><a class="ext-link" href="https://x.ai/bot/915uZ58K2YkQhevdmxt74" target="_blank" rel="noopener noreferrer">https://x.ai/bot/915uZ58K2YkQhevdmxt74</a> <button class="ghost small" id="copyHubLink" type="button">Copy link</button></p>
     <p class="meta">If the tap stays inside the Even app, copy that https address into your phone's browser, then add the bot.</p>
     <p>Add it in Grok Bot, then send it: <strong>Set up BUD for my glasses</strong> <button class="ghost small" id="copyAsk" type="button">Copy</button></p>
-    <p>Then paste here, in any order: the <strong>webhook URL</strong> and <strong>sender key</strong> from the routine panel, and the <strong>BUD1 code</strong> from the chat. One paste or several.</p>
+    <p>Then copy two fields <strong>on a computer</strong> (the Grok Bot phone app doesn't show them yet):</p>
+    <ol class="steps" id="whereSteps">
+      <li>Open the <strong>Grok Bot desktop app</strong> and the hub bot's chat.</li>
+      <li>Click the bot's name in the chat header (or press Cmd+Shift+I / Ctrl+Shift+I).</li>
+      <li>Under <strong>Routines</strong>, open <strong>BUD hub inbox</strong>.</li>
+      <li>In its <strong>Webhook</strong> section, click <strong>POST to</strong> (the webhook URL) and <strong>key</strong> (the sender key) to copy each. Copying <strong>header</strong> instead of key works too.</li>
+    </ol>
+    <p class="meta">Move them to this phone privately (Universal Clipboard, your password manager, or type them in). Never paste the key into a chat.</p>
+    <p>Paste here, in any order: the <strong>webhook URL</strong>, the <strong>sender key</strong>, and the <strong>BUD1 code</strong> the hub sends in chat. One paste or several.</p>
     <textarea id="setupBox" class="code" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste here"></textarea>
     <div class="row" style="margin-top:10px"><button id="setupPaste">Paste</button><button class="ghost" id="setupClear">Clear box</button></div>
     <ul class="checklist" id="checklist">
@@ -113,7 +122,7 @@
     <div class="row"><button class="ghost hidden" id="hubSync">Resync bot list</button><button class="ghost hidden" id="hubTest">Send test</button><button class="danger hidden" id="hubNamesClear">Clear names</button><button class="danger hidden" id="hubClear">Remove hub</button></div>
     <details class="manual"><summary>Enter by hand</summary>
       <label for="hubUrl">Hub webhook URL</label>
-      <input id="hubUrl" type="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the webhook URL from the routine panel" />
+      <input id="hubUrl" type="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste POST to from the BUD hub inbox routine" />
       <label for="hubKey">Hub sender key</label>
       <input id="hubKey" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Paste the sender key" />
       <div class="row" style="margin-top:10px"><button id="hubSave">Save hub</button></div>

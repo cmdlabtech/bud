@@ -1,4 +1,4 @@
-# Store listing — BUD (Bots Up Display) 1.0.4, FINAL DRAFT for CMDLAB's review
+# Store listing — BUD (Bots Up Display) 1.0.5, FINAL DRAFT for CMDLAB's review
 
 Nothing is submitted. Sources: [submission](https://hub.evenrealities.com/docs/ship/app-submission) (updated
 2026-08-07), [packaging](https://hub.evenrealities.com/docs/ship/packaging), [design guidelines](https://hub.evenrealities.com/docs/build/design-guidelines),
@@ -22,7 +22,7 @@ are exact so they can be checked against the form.
 | Privacy policy URL | https://bud-feedback.admin2655.workers.dev/privacy | – | live (bud-feedback 72e45c28) |
 | Terms URL | https://bud-feedback.admin2655.workers.dev/terms | – | live (bud-feedback 72e45c28) |
 | Contact email (privacy/terms) | contact@cmdlab.tech | – | public contact on /privacy and /terms |
-| Version / package | 1.0.4 / tech.cmdlab.bud | – | semver, reverse-domain ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
+| Version / package | 1.0.5 / tech.cmdlab.bud | – | semver, reverse-domain ([submission](https://hub.evenrealities.com/docs/ship/app-submission)) |
 
 ### Description (773 characters)
     Talk to your Grok Bots from your G2. Pick a bot on your glasses, speak a task, check the text, and send. Replies arrive as Grok Bot notifications. Approvals stay in the Grok Bot app.
@@ -30,7 +30,7 @@ are exact so they can be checked against the form.
     Get started
     1. Get an xAI API key at console.x.ai and paste it in BUD on your phone.
     2. Add the BUD hub bot to Grok Bot: https://x.ai/bot/915uZ58K2YkQhevdmxt74, then send it "Set up BUD for my glasses".
-    3. Paste the webhook URL and sender key from its routine panel, then the code it sends back.
+    3. Paste the webhook URL and sender key from its "BUD hub inbox" routine (Webhook section, Grok Bot desktop app), then the code it sends back.
     4. On your glasses, pick a bot, speak, and send.
 
     Requires a Grok Bot account and your own xAI API key (paid, billed by xAI for speech-to-text).

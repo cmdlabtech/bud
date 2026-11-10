@@ -20,11 +20,17 @@ The user's side, end to end. The phone page walks through the same order with a 
 3. **The hub sets itself up (one reply).** The first time, the hub creates a webhook routine named
    **"BUD hub inbox"** with the saved prompt below (Grok Bot shows its normal routine card) and replies with
    one short message with two links that open the routine's fields (from the routine's status line):
-   > Done. Copy the [Webhook URL] and paste it in BUD (Setup 2/2, Paste), then copy the [Webhook key] and paste
-   > it too. BUD tests the connection by itself and I'll send your bot list code.
-   If the links aren't shown, the same two fields are on the "BUD hub inbox" routine panel (the bot's info pane,
-   under Routines).
-4. **Paste URL and key (Setup 2/2).** Two copies (from the links or the routine panel), two taps on **Paste**
+   > Done. On a computer, open Grok Bot desktop, click my name at the top of this chat, then Routines → BUD hub
+   > inbox → Webhook. Copy **POST to** and **key** (or use these: [Webhook URL] [Webhook key]) and paste both in
+   > BUD (Setup 2/2, Paste). The phone app doesn't show them yet. Never paste the key here. BUD tests the
+   > connection by itself and I'll send your bot list code.
+   If the links don't open the fields, here is exactly where they are (1.0.5 wording, also on the phone page):
+   **Grok Bot desktop app** → the hub bot's chat → click the bot's name in the chat header (or Cmd+Shift+I /
+   Ctrl+Shift+I) → **Routines** → **BUD hub inbox** → **Webhook** section → click **POST to** (URL) and **key**
+   (sender key); **header** ("Authorization: Bearer ...") is accepted instead of key. The Grok Bot phone app
+   doesn't show these fields yet, so this step needs a computer; move the two values to the phone privately,
+   never through a chat.
+4. **Paste URL and key (Setup 2/2).** Two copies (from the links or the routine's Webhook section on desktop), two taps on **Paste**
    (or paste both at once). The checklist ticks Webhook URL and Sender key, BUD saves the hub and sends the test right away
    (kind "sync"), and shows "Connected".
 5. **The code arrives (one reply).** The routine answers the sync with a message that is **only the code**, so
@@ -35,7 +41,7 @@ The user's side, end to end. The phone page walks through the same order with a 
 Resync any time bots are added or renamed: **Resync bot list** on the phone page, or tell the hub "resync bots".
 The code holds bot display names only. It never holds a webhook URL or key, it lives on the phone, and BUD
 refuses any code that contains something URL- or key-like. A bot can't see its own routine's webhook URL or
-sender key, so those two always come from the routine's own fields (the links above or its panel).
+sender key, so those two always come from the routine's own fields (the links above or its Webhook section on Grok Bot desktop).
 
 ## What the hub says in chat ("set up BUD for my glasses", "set up my glasses")
 - No "BUD hub inbox" routine yet: create it (webhook trigger, the saved prompt below), then send the one message

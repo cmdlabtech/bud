@@ -30,6 +30,13 @@ describe('paste setup: detect each item by its pattern', () => {
   });
 });
 
+describe('paste setup: the routine header field', () => {
+  it('takes the key out of "Authorization: Bearer <key>"', () => {
+    expect(detectSetup(`Authorization: Bearer ${KEY}`)).toEqual({ key: KEY, ignored: 0 });
+    expect(detectSetup(`${URL}\nAuthorization: Bearer ${KEY}`)).toMatchObject({ url: URL, key: KEY, ignored: 0 });
+  });
+});
+
 describe('first-run progress', () => {
   it('speech key, then hub, then done', () => {
     expect(setupProgress({ xaiKey: false, hub: false })).toMatchObject({ step: 1, label: 'Setup 1/2: Speech key' });
